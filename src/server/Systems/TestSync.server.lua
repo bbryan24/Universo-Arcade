@@ -1,0 +1,1 @@
+print("Universo Arcade: Rojo está funcionando correctamente!")
