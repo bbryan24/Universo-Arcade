@@ -38,9 +38,9 @@ No se establecerán fechas de entrega rígidas. El avance dependerá de la final
 - [x] Configurar el archivo `.gitignore`.
 - [x] Crear la configuración inicial de Rojo.
 - [x] Comprobar la generación de un archivo de Roblox mediante Rojo.
-- [ ] Conectar el proyecto con Roblox Studio mediante Rojo.
-- [ ] Crear el repositorio remoto en GitHub.
-- [ ] Realizar el primer commit.
+- [x] Conectar el proyecto con Roblox Studio mediante Rojo.
+- [x] Crear el repositorio remoto en GitHub.
+- [x] Realizar el primer commit.
 
 **Criterio de finalización:** el proyecto debe poder abrirse, compilarse y sincronizarse con Roblox Studio, y estar respaldado mediante GitHub.
 
