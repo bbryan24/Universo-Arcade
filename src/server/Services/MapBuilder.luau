@@ -902,6 +902,96 @@ local function createArcadeCabinet(parent, position, rotation, theme, variant)
 		Enum.Material.Metal
 	)
 
+	-- PARTE TRASERA: PANEL DE MANTENIMIENTO
+
+	makePart(
+		"RearServicePanel",
+		Vector3.new(2.7, 3.8, 0.12),
+		Vector3.new(0, 4.8, -1.76),
+		black,
+		Enum.Material.Metal
+	)
+
+	makePart(
+		"RearPanelBorder",
+		Vector3.new(2.95, 4.05, 0.08),
+		Vector3.new(0, 4.8, -1.72),
+		secondary,
+		Enum.Material.Metal
+	)
+
+	makePart(
+		"RearPanelInner",
+		Vector3.new(2.55, 3.65, 0.06),
+		Vector3.new(0, 4.8, -1.84),
+		dark,
+		Enum.Material.Metal
+	)
+
+	-- REJILLAS DE VENTILACIÓN
+
+	for line = 1, 7 do
+		makePart(
+			"RearVent_" .. line,
+			Vector3.new(1.8, 0.07, 0.045),
+			Vector3.new(0, 6.0 - line * 0.16, -1.89),
+			metal,
+			Enum.Material.Metal
+		)
+	end
+
+	-- TORNILLOS DEL PANEL
+
+	for _, x in ipairs({-1.15, 1.15}) do
+		for _, y in ipairs({3.2, 6.4}) do
+			makePart(
+				"RearPanelScrew",
+				Vector3.new(0.12, 0.12, 0.05),
+				Vector3.new(x, y, -1.91),
+				accent,
+				Enum.Material.Metal,
+				Enum.PartType.Ball
+			)
+		end
+	end
+
+	-- CABLEADO TRASERO
+
+	local cablePositions = {-0.75, -0.25, 0.35, 0.85}
+
+	for index, x in ipairs(cablePositions) do
+
+		-- Cable vertical
+		makePart(
+			"RearCable_" .. index,
+			Vector3.new(1.8, 0.13, 0.13),
+			Vector3.new(x, 2.0, -2.0),
+			black,
+			Enum.Material.SmoothPlastic,
+			Enum.PartType.Cylinder,
+			Vector3.new(0, 0, 90)
+		)
+
+		-- Conector inferior
+		makePart(
+			"RearCableConnector_" .. index,
+			Vector3.new(0.25, 0.3, 0.22),
+			Vector3.new(x, 1.05, -2.0),
+			index % 2 == 0 and accent or metal,
+			Enum.Material.Metal
+		)
+	end
+
+	-- PEQUEÑA LÍNEA LUMINOSA TRASERA
+
+	makePart(
+		"RearAccentLight",
+		Vector3.new(2.3, 0.08, 0.06),
+		Vector3.new(0, 6.95, -1.91),
+		accent,
+		Enum.Material.Neon
+	)
+
 	-- ILUMINACIÓN
 	local lightPart = makePart(
 		"CabinetLight",
@@ -982,7 +1072,7 @@ local function createMachinePlaceholders(arcadeFolder)
 		for _, distance in ipairs(backPositions) do
 
 			local x = sideX * distance
-			local z = sideZ * 45
+			local z = sideZ * 43
 
 			local rotation = sideZ == -1 and 0 or 180
 
@@ -998,11 +1088,11 @@ local function createMachinePlaceholders(arcadeFolder)
 		end
 
 		-- Cuatro máquinas en la pared lateral.
-		local sidePositions = {18, 27, 36, 45}
+		local sidePositions = {18, 27, 36}
 
 		for _, distance in ipairs(sidePositions) do
 
-			local x = sideX * 55
+			local x = sideX * 53
 			local z = sideZ * distance
 
 			local rotation = sideX == -1 and 90 or 270
