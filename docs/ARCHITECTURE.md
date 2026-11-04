@@ -638,3 +638,102 @@ Cada decisión importante deberá documentarse cuando se tome.
 La arquitectura todavía no está implementada.
 
 El siguiente objetivo será validar la sincronización con Roblox Studio y comenzar la implementación de los fundamentos técnicos, empezando por los sistemas compartidos y la gestión de máquinas y sesiones.
+
+## Sistemas futuros de progresión y monetización
+
+Esta sección define la arquitectura prevista para los sistemas económicos y de desbloqueo de Universo Arcade. Su inclusión en el diseño técnico no implica que deban implementarse durante la primera versión.
+
+### 17. CurrencyService
+
+Responsable de gestionar los Arcade Tokens (AT).
+
+Responsabilidades:
+- Consultar el saldo del jugador.
+- Añadir o descontar moneda.
+- Validar que las operaciones sean legítimas.
+- Registrar las recompensas obtenidas al finalizar partidas.
+- Guardar y recuperar el saldo mediante DataStoreService.
+
+Las operaciones económicas estarán controladas por el servidor. El cliente nunca podrá establecer directamente su propio saldo ni decidir cuántas monedas recibe.
+
+### 18. UnlockService
+
+Gestionará los desbloqueos permanentes de salas.
+
+Responsabilidades:
+- Consultar las salas desbloqueadas por un jugador.
+- Validar si dispone de AT suficientes.
+- Procesar los desbloqueos.
+- Evitar compras duplicadas de una misma sala.
+- Persistir los desbloqueos asociados al UserId.
+
+Cada jugador tendrá su propia progresión. Los desbloqueos no se compartirán entre amigos ni dependerán de quién haya creado el servidor.
+
+### 19. RoomAccess y RoomPresentation
+
+Separaremos la validación real del acceso de su representación visual.
+
+**RoomAccess (servidor):**
+- Comprobará si el jugador tiene permiso para entrar.
+- Bloqueará el acceso a salas no desbloqueadas.
+- Validará también el acceso a las máquinas y minijuegos de cada sala.
+
+**RoomPresentation (cliente):**
+- Representará visualmente las puertas y accesos según los desbloqueos individuales.
+- Mostrará las salas disponibles y las pendientes de desbloqueo.
+- Permitirá que dos jugadores vean estados diferentes de una misma puerta.
+
+La representación visual nunca sustituirá a la validación del servidor.
+
+### 20. MonetizationService
+
+Gestionará las compras opcionales con Robux utilizando MarketplaceService.
+
+Responsabilidades:
+- Procesar productos de desarrollador (Developer Products).
+- Gestionar posibles pases de juego (Game Passes).
+- Aplicar multiplicadores de obtención de AT.
+- Gestionar la entrega de productos cosméticos.
+- Validar las compras desde el servidor.
+
+Las entregas de Developer Products deberán ser idempotentes: una misma compra no podrá entregar recompensas duplicadas, incluso si Roblox vuelve a notificar su recibo.
+
+Los multiplicadores de AT afectarán exclusivamente a la moneda obtenida. Nunca modificarán las puntuaciones, el rendimiento de las máquinas ni las condiciones competitivas.
+
+### 21. CosmeticService
+
+Gestionará los elementos de personalización del jugador.
+
+Podrá incluir:
+- Skins.
+- Estelas.
+- Efectos visuales.
+- Títulos.
+- Otros elementos estéticos.
+
+Los cosméticos estarán separados de los sistemas de puntuación y de la lógica de los minijuegos.
+
+### 22. Reglas arquitectónicas obligatorias
+
+- Todas las máquinas serán gratuitas.
+- No existirá un sistema de compra individual de máquinas.
+- Los minijuegos no se venderán individualmente.
+- El acceso a una sala dependerá de los desbloqueos del jugador.
+- El servidor será la autoridad sobre moneda, compras, permisos y recompensas.
+- El cliente solo solicitará operaciones y representará sus resultados.
+- Ninguna compra podrá modificar puntuaciones ni proporcionar ventajas competitivas.
+
+### 23. Orden previsto de implementación
+
+Estos sistemas se implementarán progresivamente en las versiones posteriores de Universo Arcade:
+
+1. Persistencia de datos del jugador.
+2. Sistema de recompensas y Arcade Tokens.
+3. Desbloqueo de salas.
+4. Representación visual individual de accesos.
+5. Compras opcionales y monetización.
+6. Personalización cosmética.
+
+No se implementará la economía antes de disponer de minijuegos funcionales y una experiencia jugable que permita evaluar correctamente las recompensas.
+
+La arquitectura deberá permitir incorporar estos sistemas sin modificar innecesariamente el funcionamiento interno de las máquinas y los minijuegos.

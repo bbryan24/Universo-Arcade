@@ -328,4 +328,109 @@ Pendiente:
 
 ---
 
+## 8. Actualización de planificación: expansión y economía
+
+**Fecha de actualización:** 04/11/2026.
+
+Esta actualización recoge las decisiones definitivas sobre la expansión del arcade, el acceso individual a las salas y el modelo de monetización.
+
+### 8.1. Diseño del mapa
+
+Se establece un diseño conceptual inicial para el salón:
+
+- Dimensiones orientativas de 100 × 80 studs.
+- Entrada y núcleo central.
+- Cuatro zonas iniciales diferenciadas, una por cada minijuego.
+- Zona social y espacio para clasificaciones.
+- Puntos de conexión reservados para futuras expansiones.
+
+El diseño completo se encuentra en `docs/MAP_DESIGN.md`.
+
+El mapa se construirá principalmente con piezas nativas de Roblox y scripts Luau, priorizando la modularidad y el rendimiento.
+
+El diseño del mapa se prepara desde las primeras fases, pero su construcción completa se realizará cuando corresponda dentro de la planificación.
+
+### 8.2. Expansión mediante nuevas salas
+
+Las futuras salas podrán desbloquearse mediante Arcade Tokens (AT).
+
+Condiciones:
+- Cada desbloqueo será permanente e individual.
+- Cada sala nueva incluirá al menos dos minijuegos gratuitos.
+- No se venderán máquinas ni partidas individuales.
+- Los jugadores necesitarán sus propios desbloqueos para acceder a cada sala.
+- El servidor validará los permisos de acceso.
+
+La estructura inicial deberá permitir añadir nuevas habitaciones y zonas sin reconstruir el salón original.
+
+### 8.3. Economía y monetización
+
+La economía se desarrollará en una fase posterior, una vez que los minijuegos principales funcionen correctamente.
+
+Se utilizará Arcade Tokens (AT) como moneda provisional.
+
+Los jugadores podrán obtener AT jugando y utilizarlos para desbloquear nuevas salas y contenido de progresión.
+
+La monetización opcional mediante Robux podrá incluir:
+
+- Multiplicadores de obtención de moneda, como x2 AT.
+- Packs de AT.
+- Skins, estelas, títulos y efectos cosméticos.
+
+Quedan descartadas las compras que proporcionen ventajas competitivas, multipliquen puntuaciones o permitan comprar máquinas.
+
+El modelo será Pay to Fast, nunca Pay to Win.
+
+### 8.4. Ajustes en las fases de desarrollo
+
+**Fase 1 — Primer minijuego funcional**
+- Se mantiene como prioridad implementar una primera experiencia jugable completa.
+- No requiere economía ni desbloqueos de salas.
+
+**Fase 2 — Persistencia**
+- Guardado y recuperación de récords personales.
+- Preparación para ampliar posteriormente los datos persistentes del jugador.
+
+**Fase 3 — Nuevos minijuegos**
+- Incorporación progresiva de las experiencias previstas.
+- Mantener la independencia de las sesiones y las máquinas.
+
+**Fase 4 — Salón arcade**
+- Construcción del salón principal.
+- Implementación de las cuatro zonas iniciales.
+- Incorporación de entrada, núcleo central y zona social.
+- Preparación de conexiones para futuras expansiones.
+
+**Fase 5 — Economía**
+- Implementación de Arcade Tokens.
+- Recompensas por jugar.
+- Desbloqueo permanente de salas.
+- Validación de permisos individuales.
+- Pruebas de equilibrio de progresión.
+
+**Fase 6 — Clasificaciones**
+- Ranking de amigos.
+- Ranking global.
+- Garantizar que las compras no afecten a las puntuaciones.
+
+**Fases posteriores — Monetización y expansión**
+- Incorporación de compras opcionales con Robux.
+- Multiplicadores de obtención de AT.
+- Cosméticos.
+- Nuevas salas y minijuegos.
+
+### 8.5. Criterios económicos de calidad
+
+Antes de publicar cualquier sistema económico se comprobará que:
+
+1. Todo el contenido jugable puede conseguirse gratuitamente.
+2. Las máquinas y partidas nunca requieren pagos.
+3. El progreso gratuito tiene un ritmo razonable.
+4. No existen esperas artificiales diseñadas para forzar compras.
+5. Las compras no alteran puntuaciones ni clasificaciones.
+6. Los desbloqueos individuales se validan en el servidor.
+7. Las compras se procesan de forma segura y no duplican recompensas.
+
+Los precios, recompensas y tiempos de desbloqueo se definirán mediante pruebas de juego. No se fijarán cantidades arbitrarias antes de disponer de una experiencia jugable con la que medir el progreso.
+
 *El roadmap es un documento vivo. Los objetivos y prioridades podrán cambiar según el progreso, las pruebas y las decisiones técnicas del proyecto.*

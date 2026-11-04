@@ -417,3 +417,92 @@ Estas funcionalidades podrán incorporarse cuando los sistemas fundamentales est
 Este documento representa la visión inicial de Universo Arcade.
 
 Las decisiones podrán evolucionar durante el desarrollo, pero cualquier modificación importante deberá quedar reflejada en la documentación técnica y en el historial de cambios del proyecto.
+
+## 15. Expansión del arcade y progresión
+
+Universo Arcade estará diseñado para crecer mediante nuevas zonas, habitaciones y experiencias jugables.
+
+El salón inicial será gratuito y contendrá los cuatro minijuegos originales. Las futuras actualizaciones podrán incorporar nuevas salas temáticas conectadas al edificio principal.
+
+### 15.1. Salas desbloqueables
+
+Las salas adicionales podrán desbloquearse utilizando la moneda interna del juego, Arcade Tokens (AT).
+
+Reglas:
+- El desbloqueo será permanente e individual.
+- Cada nueva sala incluirá al menos dos minijuegos disponibles desde el momento de su desbloqueo.
+- Los minijuegos adicionales podrán conseguirse mediante la progresión gratuita.
+- No se cobrará por utilizar una máquina ni por iniciar una partida.
+- No será necesario realizar pagos con Robux para disfrutar del contenido jugable.
+- El jugador podrá seguir progresando hasta desbloquear todo el contenido jugable.
+
+### 15.2. Acceso individual
+
+Cada jugador tendrá sus propios desbloqueos.
+
+Las puertas, accesos y elementos visuales de las salas reflejarán el progreso individual de cada jugador.
+
+Dos jugadores que compartan servidor podrán ver estados diferentes de una misma puerta. El servidor será responsable de validar los permisos reales de acceso.
+
+Cuando un jugador invite a sus amigos, estos necesitarán disponer de sus propios desbloqueos para entrar en las salas correspondientes.
+
+## 16. Economía y monetización
+
+La economía tendrá como objetivo recompensar la actividad del jugador y permitir que el proyecto genere ingresos sin perjudicar la competición.
+
+### 16.1. Arcade Tokens
+
+Arcade Tokens (AT) será el nombre provisional de la moneda interna.
+
+Se podrán conseguir jugando, completando desafíos, participando en eventos y mediante otras actividades de progresión.
+
+Su utilización principal será desbloquear nuevas salas y contenido de progresión.
+
+El equilibrio económico deberá permitir avanzar a un ritmo razonable sin necesidad de realizar compras.
+
+No se utilizarán esperas artificiales ni requisitos excesivamente largos para forzar el gasto de Robux.
+
+### 16.2. Monetización mediante Robux
+
+Universo Arcade podrá incorporar compras opcionales con Robux.
+
+Se permitirá:
+- Multiplicadores de obtención de Arcade Tokens, como un x2.
+- Packs de Arcade Tokens.
+- Estelas, skins y efectos visuales.
+- Títulos y elementos cosméticos.
+- Otras opciones de personalización.
+
+Las compras deberán facilitar la progresión o ampliar las opciones visuales, nunca proporcionar ventajas competitivas.
+
+### 16.3. Juego competitivo justo
+
+La habilidad del jugador será el único factor determinante de sus puntuaciones y posiciones competitivas.
+
+Queda expresamente descartado:
+- Multiplicadores de puntuación comprables.
+- Ventajas de rendimiento en los minijuegos por pagar.
+- Récords o posiciones de clasificación comprables.
+- Máquinas de pago.
+- Contenido jugable obligatorio de pago.
+
+Los jugadores que no gasten Robux deberán poder conseguir todo el contenido jugable mediante la progresión normal.
+
+### 16.4. Principio de monetización
+
+El modelo elegido será Pay to Fast, no Pay to Win.
+
+El jugador podrá conseguir todo jugando, pero tendrá la posibilidad de acelerar la obtención de moneda mediante compras opcionales.
+
+La monetización nunca deberá perjudicar artificialmente el ritmo de progresión gratuito ni convertir las clasificaciones en una competición económica.
+
+## 17. Principios de diseño económico
+
+1. La habilidad siempre estará por encima del gasto.
+2. Ninguna compra podrá mejorar las puntuaciones.
+3. Ninguna máquina requerirá un pago para jugar.
+4. El contenido jugable podrá conseguirse gratuitamente.
+5. Las nuevas salas deberán aportar contenido suficiente desde su desbloqueo.
+6. Los accesos serán permanentes e individuales.
+7. Las compras serán opcionales.
+8. La economía deberá resultar razonable tanto para jugadores gratuitos como para quienes decidan apoyar el proyecto económicamente.
