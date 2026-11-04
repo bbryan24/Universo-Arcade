@@ -1,11 +1,13 @@
+
 --[[
     UNIVERSO ARCADE
-    Servicio de iluminación arquitectónica.
+    Servicio de iluminacion arquitectonica.
 
-    Añade iluminación decorativa y funcional al salón:
-    - Tiras LED en el techo.
-    - Focos de iluminación general.
-    - Iluminación especial para el hub central.
+    Distribucion:
+    - 4 focos blancos por sala.
+    - 3 focos blancos por corredor.
+    - 4 focos blancos en el hub central.
+    - Tiras LED decorativas en el hub.
 ]]
 
 local Workspace = game:GetService("Workspace")
@@ -20,207 +22,31 @@ local MapConfig = require(
 local ArcadeLightingService = {}
 
 -- =====================================================
--- CREACIÓN DE PIEZAS
+-- CONFIGURACION GENERAL
 -- =====================================================
 
-local function createLightPart(parent, name, size, position, color)
-    local part = Instance.new("Part")
+-- Los focos quedan por debajo de las vigas del techo.
+local LIGHT_Y = MapConfig.Height.FloorY + 15.25
 
-    part.Name = name
-    part.Size = size
-    part.Position = position
-    part.Anchored = true
-
-    part.CanCollide = false
-    part.CanTouch = false
-    part.CanQuery = false
-    part.CastShadow = false
-
-    part.Color = color
-    part.Material = Enum.Material.Neon
-
-    part.TopSurface = Enum.SurfaceType.Smooth
-    part.BottomSurface = Enum.SurfaceType.Smooth
-
-    part.Parent = parent
-
-    return part
-end
+local WHITE = Color3.fromRGB(225, 235, 255)
 
 -- =====================================================
--- LUCES FUNCIONALES
+-- CREACION DE FOCOS
 -- =====================================================
 
-local function addPointLight(parent, name, color, brightness, range)
-    local light = Instance.new("PointLight")
-
-    light.Name = name
-    light.Color = color
-    light.Brightness = brightness
-    light.Range = range
-    light.Shadows = false
-
-    light.Parent = parent
-
-    return light
-end
-
-local function addSpotLight(parent, name, color, brightness, range, angle)
-    local light = Instance.new("SpotLight")
-
-    light.Name = name
-    light.Color = color
-    light.Brightness = brightness
-    light.Range = range
-    light.Angle = angle
-    light.Face = Enum.NormalId.Bottom
-    light.Shadows = false
-
-    light.Parent = parent
-
-    return light
-end
-
--- =====================================================
--- ILUMINACIÓN DE LAS CUATRO SALAS
--- =====================================================
-
-local function createRoomLighting(parent)
-    local arcade = MapConfig.Arcade
-    local floorY = MapConfig.Height.FloorY
-
-    local roomWidth = arcade.Width / 2
-    local roomDepth = arcade.Depth / 2
-
-    local roomCenterX = roomWidth / 2
-    local roomCenterZ = roomDepth / 2
-
-    local ledY = floorY + 16.91
-    local fixtureY = floorY + 16.4
-
-    local ledLength = roomWidth - 12
-
-    local rooms = {
-        {
-            Name = "BlockPuzzle",
-            X = -1,
-            Z = -1,
-            Color = Color3.fromRGB(0, 190, 255),
-        },
-        {
-            Name = "BubbleShooter",
-            X = 1,
-            Z = -1,
-            Color = Color3.fromRGB(255, 50, 190),
-        },
-        {
-            Name = "SpaceShooter",
-            X = -1,
-            Z = 1,
-            Color = Color3.fromRGB(100, 80, 255),
-        },
-        {
-            Name = "BrickBreaker",
-            X = 1,
-            Z = 1,
-            Color = Color3.fromRGB(255, 160, 35),
-        },
-    }
-
-    for _, room in ipairs(rooms) do
-        local centerX = arcade.Center.X + room.X * roomCenterX
-        local centerZ = arcade.Center.Z + room.Z * roomCenterZ
-
-        -- Tira LED integrada visualmente en el techo.
-        local led = createLightPart(
-            parent,
-            room.Name .. "_CeilingLED",
-            Vector3.new(ledLength, 0.12, 0.2),
-            Vector3.new(centerX, ledY, centerZ),
-            room.Color
-        )
-
-        -- Resplandor suave de la propia tira.
-        addPointLight(
-            led,
-            room.Name .. "_LEDGlow",
-            room.Color,
-            0.55,
-            18
-        )
-
-        -- Foco principal de iluminación de la sala.
-        local fixture = Instance.new("Part")
-
-        fixture.Name = room.Name .. "_MainLight"
-        fixture.Size = Vector3.new(0.3, 0.3, 0.3)
-        fixture.Position = Vector3.new(centerX, fixtureY, centerZ)
-        fixture.Anchored = true
-
-        fixture.Transparency = 1
-        fixture.CanCollide = false
-        fixture.CanTouch = false
-        fixture.CanQuery = false
-        fixture.CastShadow = false
-
-        fixture.Parent = parent
-
-        addSpotLight(
-            fixture,
-            room.Name .. "_Downlight",
-         Color3.fromRGB(215, 225, 255),
-            2.8,
-            45,
-            110
-        )
-
-        -- Un pequeño toque de color ambiental por sala.
-        addPointLight(
-            fixture,
-            room.Name .. "_AmbientGlow",
-            room.Color,
-            0.45,
-            24
-        )
-    end
-end
-
--- =====================================================
--- ILUMINACIÓN DEL HUB CENTRAL
--- =====================================================
-
-local function createHubLighting(parent)
-    local floorY = MapConfig.Height.FloorY
-
-    local ledY = floorY + 16.91
-    local fixtureY = floorY + 16.4
-
-    local cyan = Color3.fromRGB(0, 220, 255)
-    local purple = Color3.fromRGB(130, 75, 255)
-
-    -- Dos tiras cruzadas sobre el centro.
-    createLightPart(
-        parent,
-        "Hub_CeilingLED_Cyan",
-        Vector3.new(8, 0.12, 0.18),
-        Vector3.new(0, ledY, 0),
-        cyan
-    )
-
-    createLightPart(
-        parent,
-        "Hub_CeilingLED_Purple",
-        Vector3.new(0.18, 0.12, 8),
-        Vector3.new(0, ledY, 0),
-        purple
-    )
-
-    -- Luz central.
+local function createDownlight(
+    parent,
+    name,
+    position,
+    brightness,
+    range,
+    angle
+)
     local fixture = Instance.new("Part")
 
-    fixture.Name = "Hub_CentralLight"
+    fixture.Name = name
     fixture.Size = Vector3.new(0.3, 0.3, 0.3)
-    fixture.Position = Vector3.new(0, fixtureY, 0)
+    fixture.Position = position
     fixture.Anchored = true
 
     fixture.Transparency = 1
@@ -231,21 +57,243 @@ local function createHubLighting(parent)
 
     fixture.Parent = parent
 
-    addPointLight(
-        fixture,
-        "Hub_MainGlow",
-        Color3.fromRGB(220, 230, 255),
-        1.8,
-        28
-        )
+    local light = Instance.new("SpotLight")
 
-    addSpotLight(
-    fixture,
-       "Hub_Downlight",
-      Color3.fromRGB(220, 230, 255),
-        2.5,
-        28,
-        100
+    light.Name = name .. "_SpotLight"
+    light.Color = WHITE
+    light.Brightness = brightness
+    light.Range = range
+    light.Angle = angle
+    light.Face = Enum.NormalId.Bottom
+    light.Shadows = false
+
+    light.Parent = fixture
+
+    return fixture
+end
+
+-- =====================================================
+-- CREACION DE TIRAS LED
+-- =====================================================
+
+local function createLED(
+    parent,
+    name,
+    size,
+    position,
+    color
+)
+    local led = Instance.new("Part")
+
+    led.Name = name
+    led.Size = size
+    led.Position = position
+    led.Anchored = true
+
+    led.CanCollide = false
+    led.CanTouch = false
+    led.CanQuery = false
+    led.CastShadow = false
+
+    led.Color = color
+    led.Material = Enum.Material.Neon
+
+    led.TopSurface = Enum.SurfaceType.Smooth
+    led.BottomSurface = Enum.SurfaceType.Smooth
+
+    led.Parent = parent
+
+    return led
+end
+
+-- =====================================================
+-- ILUMINACION DE LAS CUATRO SALAS
+-- =====================================================
+
+local function createRoomLighting(parent)
+    local floorY = MapConfig.Height.FloorY
+
+    local rooms = {
+        {
+            Name = "BlockPuzzle",
+            X = -1,
+            Z = -1,
+        },
+        {
+            Name = "BubbleShooter",
+            X = 1,
+            Z = -1,
+        },
+        {
+            Name = "SpaceShooter",
+            X = -1,
+            Z = 1,
+        },
+        {
+            Name = "BrickBreaker",
+            X = 1,
+            Z = 1,
+        },
+    }
+
+    -- Posiciones locales dentro de cada sala.
+    -- Evitan las vigas y las filas de maquinas.
+    local positions = {
+        { X = 22, Z = 14 },
+        { X = 42, Z = 14 },
+        { X = 22, Z = 32 },
+        { X = 42, Z = 32 },
+    }
+
+    for _, room in ipairs(rooms) do
+        local roomFolder = Instance.new("Folder")
+        roomFolder.Name = room.Name .. "_Lighting"
+        roomFolder.Parent = parent
+
+        for index, offset in ipairs(positions) do
+            local position = Vector3.new(
+                room.X * offset.X,
+                LIGHT_Y,
+                room.Z * offset.Z
+            )
+
+            createDownlight(
+                roomFolder,
+                room.Name .. "_MainLight_" .. index,
+                position,
+                3,
+                38,
+                100
+            )
+        end
+    end
+end
+
+-- =====================================================
+-- ILUMINACION DE LOS CUATRO CORREDORES
+-- =====================================================
+
+local function createCorridorLighting(parent)
+    local corridorsFolder = Instance.new("Folder")
+    corridorsFolder.Name = "CorridorLighting"
+    corridorsFolder.Parent = parent
+
+    local corridorPositions = {
+        {
+            Name = "North",
+            Positions = {
+                Vector3.new(0, LIGHT_Y, -16),
+                Vector3.new(0, LIGHT_Y, -25),
+                Vector3.new(0, LIGHT_Y, -34),
+            },
+        },
+        {
+            Name = "South",
+            Positions = {
+                Vector3.new(0, LIGHT_Y, 16),
+                Vector3.new(0, LIGHT_Y, 25),
+                Vector3.new(0, LIGHT_Y, 34),
+            },
+        },
+        {
+            Name = "West",
+            Positions = {
+                Vector3.new(-16, LIGHT_Y, 0),
+                Vector3.new(-25, LIGHT_Y, 0),
+                Vector3.new(-34, LIGHT_Y, 0),
+            },
+        },
+        {
+            Name = "East",
+            Positions = {
+                Vector3.new(16, LIGHT_Y, 0),
+                Vector3.new(25, LIGHT_Y, 0),
+                Vector3.new(34, LIGHT_Y, 0),
+            },
+        },
+    }
+
+    for _, corridor in ipairs(corridorPositions) do
+        local corridorFolder = Instance.new("Folder")
+        corridorFolder.Name = corridor.Name
+        corridorFolder.Parent = corridorsFolder
+
+        for index, position in ipairs(corridor.Positions) do
+            createDownlight(
+                corridorFolder,
+                corridor.Name .. "_Light_" .. index,
+                position,
+                2,
+                20,
+                90
+            )
+        end
+    end
+end
+
+-- =====================================================
+-- ILUMINACION DEL HUB CENTRAL
+-- =====================================================
+
+local function createHubLighting(parent)
+    local hubFolder = Instance.new("Folder")
+    hubFolder.Name = "HubLighting"
+    hubFolder.Parent = parent
+
+    local hubPositions = {
+        Vector3.new(-6, LIGHT_Y, 0),
+        Vector3.new(6, LIGHT_Y, 0),
+        Vector3.new(0, LIGHT_Y, -6),
+        Vector3.new(0, LIGHT_Y, 6),
+    }
+
+    for index, position in ipairs(hubPositions) do
+        createDownlight(
+            hubFolder,
+            "Hub_MainLight_" .. index,
+            position,
+            2.5,
+            24,
+            100
+        )
+    end
+
+    -- Cuatro tiras LED formando un marco cuadrado.
+    local ledY = MapConfig.Height.FloorY + 15.55
+
+    local cyan = Color3.fromRGB(0, 210, 255)
+    local purple = Color3.fromRGB(145, 75, 255)
+
+    createLED(
+        hubFolder,
+        "Hub_LED_North",
+        Vector3.new(7, 0.12, 0.18),
+        Vector3.new(0, ledY, -7.5),
+        cyan
+    )
+
+    createLED(
+        hubFolder,
+        "Hub_LED_South",
+        Vector3.new(7, 0.12, 0.18),
+        Vector3.new(0, ledY, 7.5),
+        purple
+    )
+
+    createLED(
+        hubFolder,
+        "Hub_LED_West",
+        Vector3.new(0.18, 0.12, 7),
+        Vector3.new(-7.5, ledY, 0),
+        purple
+    )
+
+    createLED(
+        hubFolder,
+        "Hub_LED_East",
+        Vector3.new(0.18, 0.12, 7),
+        Vector3.new(7.5, ledY, 0),
+        cyan
     )
 end
 
@@ -257,8 +305,10 @@ function ArcadeLightingService.Apply()
     local map = Workspace:WaitForChild("Map")
     local arcade = map:WaitForChild("Arcade")
 
-    -- Evitar duplicar luces al volver a ejecutar el servicio.
-    local oldFolder = arcade:FindFirstChild("ArchitecturalLighting")
+    -- Evitar duplicados al reiniciar el servicio.
+    local oldFolder = arcade:FindFirstChild(
+        "ArchitecturalLighting"
+    )
 
     if oldFolder then
         oldFolder:Destroy()
@@ -269,9 +319,12 @@ function ArcadeLightingService.Apply()
     lightingFolder.Parent = arcade
 
     createRoomLighting(lightingFolder)
+    createCorridorLighting(lightingFolder)
     createHubLighting(lightingFolder)
 
-    print("[Universo Arcade] Iluminación arquitectónica aplicada.")
+    print(
+        "[Universo Arcade] Iluminacion arquitectonica aplicada."
+    )
 end
 
 return ArcadeLightingService

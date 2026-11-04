@@ -1,9 +1,13 @@
 
 --[[
     UNIVERSO ARCADE
-    Servicio de iluminación ambiental.
+    Servicio de iluminacion ambiental.
 
-    Estilo: mezcla de arcade clásico y futurista.
+    Objetivo:
+    - Ambiente nocturno y futurista.
+    - Mejor visibilidad general.
+    - Neones definidos sin halos excesivos.
+    - Personajes y maquinas nitidos.
 ]]
 
 local Lighting = game:GetService("Lighting")
@@ -28,50 +32,67 @@ local function getOrCreateEffect(className, effectName)
 end
 
 function LightingService.Apply()
-    -- Iluminación general.
--- La tecnología de iluminación se configura desde Studio.
+
+    -- ================================================
+    -- ILUMINACION GENERAL
+    -- ================================================
+
     Lighting.ClockTime = 0
-    Lighting.Brightness = 2
-    Lighting.ExposureCompensation = 0
+    Lighting.Brightness = 2.5
+    Lighting.ExposureCompensation = 0.1
 
-    -- Ambiente oscuro, pero con suficiente visibilidad.
-    Lighting.Ambient = Color3.fromRGB(65, 55, 95)
-    Lighting.OutdoorAmbient = Color3.fromRGB(35, 30, 55)
-    Lighting.ColorShift_Top = Color3.fromRGB(35, 25, 65)
-    Lighting.ColorShift_Bottom = Color3.fromRGB(15, 15, 30)
+    -- Ambiente oscuro, pero con mejor visibilidad.
+    Lighting.Ambient = Color3.fromRGB(90, 85, 120)
+    Lighting.OutdoorAmbient = Color3.fromRGB(65, 60, 90)
 
-    Lighting.EnvironmentDiffuseScale = 0.35
-    Lighting.EnvironmentSpecularScale = 0.7
+    Lighting.ColorShift_Top = Color3.fromRGB(25, 20, 55)
+    Lighting.ColorShift_Bottom = Color3.fromRGB(20, 20, 35)
 
-    -- Resplandor de los elementos luminosos.
-    local bloom = getOrCreateEffect("BloomEffect", "ArcadeBloom")
-    bloom.Intensity = 0.18
-    bloom.Size = 18
-    bloom.Threshold = 1.5
+    Lighting.EnvironmentDiffuseScale = 0.5
+    Lighting.EnvironmentSpecularScale = 0.6
 
-    -- Ajuste general del color.
+    -- ================================================
+    -- BLOOM: CONTROL DE LOS HALOS
+    -- ================================================
+
+    local bloom = getOrCreateEffect(
+        "BloomEffect",
+        "ArcadeBloom"
+    )
+
+    bloom.Intensity = 0.08
+    bloom.Size = 12
+    bloom.Threshold = 2
+
+    -- ================================================
+    -- CORRECCION DE COLOR
+    -- ================================================
+
     local colorCorrection = getOrCreateEffect(
         "ColorCorrectionEffect",
         "ArcadeColorCorrection"
     )
 
-    colorCorrection.Brightness = -0.03
-    colorCorrection.Contrast = 0.15
-    colorCorrection.Saturation = 0.15
-    colorCorrection.TintColor = Color3.fromRGB(220, 215, 255)
+    colorCorrection.Brightness = 0
+    colorCorrection.Contrast = 0.08
+    colorCorrection.Saturation = 0.08
+    colorCorrection.TintColor = Color3.fromRGB(235, 230, 255)
 
-    -- Ambiente ligeramente brumoso para dar profundidad.
+    -- ================================================
+    -- ATMOSFERA
+    -- ================================================
+
     local atmosphere = getOrCreateEffect(
         "Atmosphere",
         "ArcadeAtmosphere"
     )
 
-    atmosphere.Density = 0.12
+    atmosphere.Density = 0.04
     atmosphere.Offset = 0.1
-    atmosphere.Color = Color3.fromRGB(145, 125, 190)
-    atmosphere.Decay = Color3.fromRGB(65, 45, 110)
+    atmosphere.Color = Color3.fromRGB(160, 150, 200)
+    atmosphere.Decay = Color3.fromRGB(75, 60, 120)
     atmosphere.Glare = 0
-    atmosphere.Haze = 0.5
+    atmosphere.Haze = 0.2
 end
 
 return LightingService
