@@ -43,6 +43,7 @@ end
 -- SUELO
 -- =====================================================
 
+
 local function createFloor(parent)
     local arcade = MapConfig.Arcade
     local height = MapConfig.Height
@@ -60,10 +61,290 @@ local function createFloor(parent)
             height.FloorY - height.FloorThickness / 2,
             arcade.Center.Z
         ),
-        Color3.fromRGB(20, 20, 35),
-        Enum.Material.SmoothPlastic
+        Color3.fromRGB(13, 16, 33),
+        Enum.Material.Fabric
     )
 end
+
+
+
+
+
+-- =====================================================
+-- MOQUETA GEOMETRICA RETRO ARCADE
+-- =====================================================
+
+local function createFloorPattern(parent)
+    local floorY = MapConfig.Height.FloorY
+
+    local patternFolder = Instance.new("Folder")
+    patternFolder.Name = "FloorPattern"
+    patternFolder.Parent = parent
+
+    local rng = Random.new(90210)
+
+    -- Paleta de colores retro
+    local colors = {
+        Color3.fromRGB(25, 105, 145),  -- Azul cian
+        Color3.fromRGB(45, 65, 145),   -- Azul arcade
+        Color3.fromRGB(105, 55, 145),  -- Morado
+        Color3.fromRGB(165, 55, 125),  -- Magenta
+        Color3.fromRGB(190, 105, 45),  -- Naranja
+        Color3.fromRGB(55, 115, 120),  -- Turquesa
+    }
+
+    -- -------------------------------------------------
+    -- CREAR FIGURAS GEOMETRICAS
+    -- -------------------------------------------------
+
+    local function createShape(
+        shapeType,
+        x,
+        z,
+        sizeX,
+        sizeZ,
+        rotation,
+        color
+    )
+        local piece
+
+        if shapeType == "Circle" then
+            piece = Instance.new("Part")
+            piece.Shape = Enum.PartType.Cylinder
+
+            piece.Size = Vector3.new(
+                0.04,
+                sizeX,
+                sizeX
+            )
+
+        elseif shapeType == "Triangle" then
+            piece = Instance.new("WedgePart")
+
+            piece.Size = Vector3.new(
+                sizeX,
+                sizeZ,
+                0.04
+            )
+
+        else
+            piece = Instance.new("Part")
+
+            piece.Size = Vector3.new(
+                sizeX,
+                0.04,
+                sizeZ
+            )
+        end
+
+        piece.Name = "GeometricFragment"
+
+        if shapeType == "Circle" then
+            piece.CFrame =
+                CFrame.new(x, floorY + 0.025, z)
+                * CFrame.Angles(0, 0, math.rad(90))
+
+        elseif shapeType == "Triangle" then
+            piece.CFrame =
+                CFrame.new(x, floorY + 0.025, z)
+                * CFrame.Angles(0, math.rad(rotation), 0)
+                * CFrame.Angles(math.rad(90), 0, 0)
+
+        else
+            piece.CFrame =
+                CFrame.new(x, floorY + 0.025, z)
+                * CFrame.Angles(0, math.rad(rotation), 0)
+        end
+
+        piece.Anchored = true
+        piece.CanCollide = false
+        piece.CanTouch = false
+        piece.CanQuery = false
+        piece.CastShadow = false
+
+        piece.Color = color
+        piece.Material = Enum.Material.SmoothPlastic
+
+        piece.TopSurface = Enum.SurfaceType.Smooth
+        piece.BottomSurface = Enum.SurfaceType.Smooth
+
+        piece.Parent = patternFolder
+    end
+
+    -- -------------------------------------------------
+    -- COLECCION DE MOTIVOS GEOMETRICOS
+    -- -------------------------------------------------
+
+    -- Cada motivo tiene una composicion diferente.
+    -- X y Z representan posiciones relativas al centro.
+    -- A y B representan las dimensiones de cada figura.
+
+    local motifs = {
+
+        -- MOTIVO 1: triangulos y circulo
+        {
+            {"Triangle", -0.8, 0, 1.8, 1.5, 0},
+            {"Triangle", 0.8, 0.4, 1.3, 1.2, 180},
+            {"Circle", 0.5, -0.9, 0.75, 0, 0},
+            {"Block", -0.7, 1.0, 1.2, 0.25, 45},
+        },
+
+        -- MOTIVO 2: rombos y bloques
+        {
+            {"Diamond", 0, 0, 1.5, 1.5, 0},
+            {"Block", -1.0, 0.8, 1.1, 0.25, -35},
+            {"Circle", 1.0, -0.8, 0.65, 0, 0},
+        },
+
+        -- MOTIVO 3: circulos y triangulos
+        {
+            {"Circle", -0.8, -0.5, 1.0, 0, 0},
+            {"Circle", 0.9, 0.7, 0.55, 0, 0},
+            {"Triangle", 0.8, -0.6, 1.5, 1.3, 90},
+            {"Block", -0.5, 1.1, 1.4, 0.2, 25},
+        },
+
+        -- MOTIVO 4: composicion abstracta
+        {
+            {"Diamond", -0.7, -0.5, 1.2, 1.2, 0},
+            {"Triangle", 0.8, 0.5, 1.5, 1.4, 180},
+            {"Block", 0, -1.0, 1.8, 0.25, -20},
+            {"Circle", 1.1, -0.8, 0.55, 0, 0},
+        },
+    }
+
+    -- -------------------------------------------------
+    -- COLOCAR UN MOTIVO EN EL SUELO
+    -- -------------------------------------------------
+
+    local function createMotif(centerX, centerZ)
+        local motif = motifs[rng:NextInteger(1, #motifs)]
+
+        local rotation = rng:NextInteger(0, 3) * 90
+
+        local radians = math.rad(rotation)
+
+        for _, figure in ipairs(motif) do
+            local shapeType = figure[1]
+
+            local offsetX = figure[2]
+            local offsetZ = figure[3]
+
+            -- Rotar la composicion completa
+            local rotatedX =
+                offsetX * math.cos(radians)
+                - offsetZ * math.sin(radians)
+
+            local rotatedZ =
+                offsetX * math.sin(radians)
+                + offsetZ * math.cos(radians)
+
+            local x = centerX + rotatedX
+                + rng:NextNumber(-0.15, 0.15)
+
+            local z = centerZ + rotatedZ
+                + rng:NextNumber(-0.15, 0.15)
+
+            local sizeX = figure[4]
+            local sizeZ = figure[5]
+
+            local pieceRotation = rotation + figure[6]
+
+            local color = colors[
+                rng:NextInteger(1, #colors)
+            ]
+
+            createShape(
+                shapeType,
+                x,
+                z,
+                sizeX,
+                sizeZ,
+                pieceRotation,
+                color
+            )
+        end
+    end
+
+
+    -- -------------------------------------------------
+    -- DISTRIBUCION ORGANICA POR LAS CUATRO SALAS
+    -- -------------------------------------------------
+
+    local motifsPerRoom = 16
+
+    -- Separacion minima entre los centros de los motivos.
+    local minDistance = 8.5
+
+    -- Limites de colocacion dentro de cada sala.
+    local minX = 14
+    local maxX = 55
+
+    local minZ = 13
+    local maxZ = 45
+
+    -- Cada cuadrante se calcula de forma independiente.
+    for _, xDirection in ipairs({-1, 1}) do
+        for _, zDirection in ipairs({-1, 1}) do
+
+            local placedMotifs = {}
+            local attempts = 0
+            local maxAttempts = 2000
+
+            while #placedMotifs < motifsPerRoom
+                and attempts < maxAttempts do
+
+                attempts += 1
+
+                -- Posicion completamente aleatoria.
+                local xDistance = rng:NextNumber(minX, maxX)
+                local zDistance = rng:NextNumber(minZ, maxZ)
+
+                local x = xDirection * xDistance
+                local z = zDirection * zDistance
+
+                -- Comprobar distancia respecto a otros motivos.
+                local validPosition = true
+
+                for _, existing in ipairs(placedMotifs) do
+                    local dx = x - existing.X
+                    local dz = z - existing.Z
+
+                    local distance = math.sqrt(
+                        dx * dx + dz * dz
+                    )
+
+                    if distance < minDistance then
+                        validPosition = false
+                        break
+                    end
+                end
+
+                -- Solo colocar el motivo si hay espacio suficiente.
+                if validPosition then
+                    createMotif(x, z)
+
+                    table.insert(placedMotifs, {
+                        X = x,
+                        Z = z,
+                    })
+                end
+            end
+
+            print(
+                "[Universo Arcade] Motivos colocados:",
+                #placedMotifs,
+                "de",
+                motifsPerRoom
+            )
+        end
+    end
+end
+
+
+    -- El hub central permanece sin patron.
+    -- Los corredores tambien permanecen limpios.
+
 
 -- =====================================================
 -- ROTONDA CENTRAL
@@ -129,7 +410,7 @@ local function createCorridors(parent)
                 floorY,
                 direction.Z * (10 + length / 2)
             ),
-            Color3.fromRGB(35, 35, 65),
+           Color3.fromRGB(40, 48, 82),
             Enum.Material.SmoothPlastic
         )
     end
@@ -150,7 +431,7 @@ local function createCorridors(parent)
                 floorY,
                 0
             ),
-            Color3.fromRGB(35, 35, 65),
+            Color3.fromRGB(40, 48, 82),
             Enum.Material.SmoothPlastic
         )
     end
@@ -383,17 +664,6 @@ local function createArchitecture(parent)
         southOpening
     )
 end
-
-
--- =====================================================
--- SEPARACION VISUAL DE LAS ZONAS
--- =====================================================
-
-
--- =====================================================
--- SEPARACION Y HABITACIONES DE LAS ZONAS
--- =====================================================
-
 
 -- =====================================================
 -- HABITACIONES ARCADE CON ENTRADAS DIAGONALES
@@ -1328,6 +1598,7 @@ function MapBuilder.Build()
     arcadeFolder.Parent = mapFolder
 
     createFloor(arcadeFolder)
+    createFloorPattern(arcadeFolder)
     createCentralHub(arcadeFolder)
     createCorridors(arcadeFolder)
     createArchitecture(arcadeFolder)
