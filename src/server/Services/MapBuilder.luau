@@ -1124,6 +1124,189 @@ local function createMachinePlaceholders(arcadeFolder)
 	print("[Universo Arcade] " .. machineNumber .. " máquinas creadas.")
 end
 
+
+-- =====================================================
+-- TECHO DEL SALON ARCADE
+-- =====================================================
+
+local function createRoof(parent)
+    local arcade = MapConfig.Arcade
+    local center = arcade.Center
+
+    local width = arcade.Width
+    local depth = arcade.Depth
+
+    local roofFolder = Instance.new("Folder")
+    roofFolder.Name = "Roof"
+    roofFolder.Parent = parent
+
+    -- Altura de la cubierta.
+    local roofY = MapConfig.Height.FloorY + 17.5
+
+    -- Colores de la estructura.
+    local roofColor = Color3.fromRGB(15, 15, 27)
+    local beamColor = Color3.fromRGB(32, 29, 48)
+    local detailColor = Color3.fromRGB(55, 48, 75)
+
+    -- -------------------------------------------------
+    -- CUATRO PANELES PRINCIPALES
+    -- -------------------------------------------------
+
+    local panelWidth = width / 2
+    local panelDepth = depth / 2
+
+    for _, xDirection in ipairs({-1, 1}) do
+        for _, zDirection in ipairs({-1, 1}) do
+
+            local panelX = center.X + xDirection * panelWidth / 2
+            local panelZ = center.Z + zDirection * panelDepth / 2
+
+            createPart(
+                roofFolder,
+                "RoofPanel",
+                Vector3.new(
+                    panelWidth,
+                    1,
+                    panelDepth
+                ),
+                Vector3.new(
+                    panelX,
+                    roofY,
+                    panelZ
+                ),
+                roofColor,
+                Enum.Material.Metal
+            )
+        end
+    end
+
+    -- -------------------------------------------------
+    -- VIGAS ESTRUCTURALES TRANSVERSALES
+    -- -------------------------------------------------
+
+    local horizontalPositions = {
+        -depth / 2 + 10,
+        -depth / 2 + 30,
+        center.Z,
+        depth / 2 - 30,
+        depth / 2 - 10,
+    }
+
+    for _, offsetZ in ipairs(horizontalPositions) do
+        createPart(
+            roofFolder,
+            "MainRoofBeam",
+            Vector3.new(
+                width,
+                1.2,
+                1
+            ),
+            Vector3.new(
+                center.X,
+                roofY - 1.1,
+                center.Z + offsetZ
+            ),
+            beamColor,
+            Enum.Material.Metal
+        )
+    end
+
+    -- -------------------------------------------------
+    -- VIGAS ESTRUCTURALES LONGITUDINALES
+    -- -------------------------------------------------
+
+    local verticalPositions = {
+        -width / 2 + 10,
+        -width / 2 + 30,
+        center.X,
+        width / 2 - 30,
+        width / 2 - 10,
+    }
+
+    for _, offsetX in ipairs(verticalPositions) do
+        createPart(
+            roofFolder,
+            "SecondaryRoofBeam",
+            Vector3.new(
+                1,
+                1.2,
+                depth
+            ),
+            Vector3.new(
+                center.X + offsetX,
+                roofY - 1.1,
+                center.Z
+            ),
+            beamColor,
+            Enum.Material.Metal
+        )
+    end
+
+    -- -------------------------------------------------
+    -- CIERRE PERIMETRAL DEL TECHO
+    -- -------------------------------------------------
+
+    local perimeterHeight = 1
+    local perimeterY = roofY - 1
+
+    -- Norte y sur.
+    for _, direction in ipairs({-1, 1}) do
+        createPart(
+            roofFolder,
+            "RoofPerimeterBeam",
+            Vector3.new(width, perimeterHeight, 2),
+            Vector3.new(
+                center.X,
+                perimeterY,
+                center.Z + direction * (depth / 2 - 1)
+            ),
+            beamColor,
+            Enum.Material.Metal
+        )
+    end
+
+    -- Este y oeste.
+    for _, direction in ipairs({-1, 1}) do
+        createPart(
+            roofFolder,
+            "RoofPerimeterBeam",
+            Vector3.new(2, perimeterHeight, depth),
+            Vector3.new(
+                center.X + direction * (width / 2 - 1),
+                perimeterY,
+                center.Z
+            ),
+            beamColor,
+            Enum.Material.Metal
+        )
+    end
+
+    -- -------------------------------------------------
+    -- DETALLES DECORATIVOS DE LAS VIGAS
+    -- -------------------------------------------------
+
+    for _, offsetZ in ipairs(horizontalPositions) do
+        createPart(
+            roofFolder,
+            "RoofBeamDetail",
+            Vector3.new(
+                width,
+                0.12,
+                0.15
+            ),
+            Vector3.new(
+                center.X,
+                roofY - 1.73,
+                center.Z + offsetZ
+            ),
+            detailColor,
+            Enum.Material.Metal
+        )
+    end
+
+    print("[Universo Arcade] Techo construido correctamente.")
+end
+
 -- =====================================================
 -- CONSTRUCTOR PRINCIPAL
 -- =====================================================
@@ -1150,6 +1333,7 @@ function MapBuilder.Build()
     createArchitecture(arcadeFolder)
     createMachinePlaceholders(arcadeFolder)
     createZoneArchitecture(arcadeFolder)
+    createRoof(arcadeFolder)
 
     print("[Universo Arcade] Salon arcade construido correctamente.")
 
