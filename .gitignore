@@ -1,0 +1,36 @@
+
+# Archivos y carpetas del sistema
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Configuración local de editores
+.vscode/*
+!.vscode/extensions.json
+
+# Archivos temporales
+*.tmp
+*.bak
+*.log
+
+# Archivos temporales de Roblox y herramientas
+*.rbxl.lock
+*.rbxlx.lock
+*.rbxm.lock
+*.rbxmx.lock
+
+# Archivos generados
+node_modules/
+dist/
+build/
+
+# Variables de entorno y credenciales
+.env
+.env.*
+!.env.example
+
+# Archivos de respaldo
+*.backup
+
+# Archivos generados por Rojo
+sourcemap.json
