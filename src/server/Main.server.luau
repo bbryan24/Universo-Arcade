@@ -75,10 +75,18 @@ local WallPosterService = require(
     Services:WaitForChild("WallPosterService")
 )
 
+local MachineInteractionService = require(
+    Services:WaitForChild("MachineInteractionService")
+)
+
+print("[Universo Arcade] MachineInteractionService cargado.")
+
 removeDefaultStudioObjects()
 
 MapBuilder.Build()
 createPlayerSpawn()
+
+MachineInteractionService.Apply()
 
 WallArchitectureService.Apply()
 WallDecorationService.Apply()

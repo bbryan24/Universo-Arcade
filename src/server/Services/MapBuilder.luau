@@ -855,6 +855,17 @@ local function createArcadeCabinet(parent, position, rotation, theme, variant)
 	model.Name = theme.Name .. "_Machine_" .. variant
 	model.Parent = parent
 
+    -- Identificación de la recreativa.
+model:SetAttribute(
+    "MachineId",
+    theme.Name .. "_" .. string.format("%02d", variant)
+)
+
+model:SetAttribute("MinigameId", theme.Name)
+model:SetAttribute("MachineNumber", variant)
+model:SetAttribute("ZoneId", theme.Name)
+model:SetAttribute("DisplayName", theme.Title)
+
 	local baseCFrame = CFrame.new(position) * CFrame.Angles(0, math.rad(rotation), 0)
 
 	local function makePart(name, size, offset, color, material, shape, angles)
