@@ -1,13 +1,15 @@
-# Universo Arcade — Arquitectura técnica
+# UNIVERSO ARCADE — ARQUITECTURA TÉCNICA
 
 | Información | Detalle |
 |---|---|
 | Proyecto | Universo Arcade |
 | Documento | Arquitectura técnica |
-| Versión del documento | 0.1 |
-| Estado | Diseño inicial |
+| Versión del documento | 0.2 |
+| Estado | Arquitectura inicial definida; sistemas jugables pendientes |
 | Lenguaje principal | Luau |
 | Motor | Roblox |
+| Sincronización | Rojo 7.7.1 |
+| Control de versiones | Git / GitHub |
 
 ---
 
@@ -17,24 +19,37 @@
 
 Este documento define la arquitectura técnica de Universo Arcade y establece las bases para implementar sus sistemas principales.
 
-La arquitectura debe permitir desarrollar diferentes minijuegos independientes, reutilizando los sistemas comunes y evitando duplicaciones innecesarias.
+El proyecto está concebido como una experiencia multijugador de Roblox que reúne diferentes minijuegos independientes dentro de un salón recreativo.
 
-Se priorizarán la modularidad, la seguridad, la mantenibilidad y la posibilidad de ampliar el proyecto progresivamente.
+La arquitectura debe permitir desarrollar nuevos minijuegos reutilizando los sistemas comunes y evitando duplicaciones innecesarias.
+
+Se priorizarán:
+
+- Modularidad.
+- Separación de responsabilidades.
+- Seguridad.
+- Mantenibilidad.
+- Reutilización de componentes.
+- Independencia entre sesiones de juego.
+- Posibilidad de ampliar el proyecto progresivamente.
+
+Este documento diferencia los sistemas que ya están implementados de aquellos que forman parte del diseño técnico y todavía necesitan desarrollarse.
 
 ## 1.2. Principios arquitectónicos
 
 El proyecto seguirá los siguientes principios:
 
-- Separación de responsabilidades.
 - Separación entre cliente y servidor.
 - Validación de operaciones importantes en servidor.
 - Reutilización de sistemas comunes.
-- Independencia entre sesiones de juego.
+- Independencia entre minijuegos.
 - Dependencias explícitas entre módulos.
 - Persistencia de datos controlada.
-- Gestión centralizada de errores.
+- Gestión segura de errores.
 - Código legible y documentado.
+- Configuración centralizada.
 - Evolución incremental de la arquitectura.
+- Evitar abstracciones innecesarias.
 
 ## 1.3. Tecnologías
 
@@ -43,7 +58,7 @@ El proyecto seguirá los siguientes principios:
 | Roblox Studio | Motor y entorno de ejecución |
 | Luau | Lenguaje de programación |
 | Visual Studio Code | Desarrollo y edición |
-| Rojo | Sincronización entre archivos y Roblox Studio |
+| Rojo 7.7.1 | Sincronización entre archivos y Roblox Studio |
 | Rokit | Gestión de herramientas |
 | Git | Control de versiones |
 | GitHub | Alojamiento del repositorio |
@@ -54,11 +69,11 @@ El proyecto seguirá los siguientes principios:
 
 ## 2.1. Separación de ejecución
 
-La arquitectura se dividirá en tres grandes áreas:
+La arquitectura se dividirá en tres grandes áreas.
 
 ### Cliente
 
-Se ejecuta en el dispositivo del jugador.
+Se ejecutará en el dispositivo del jugador.
 
 Responsabilidades:
 
@@ -68,12 +83,14 @@ Responsabilidades:
 - Mostrar información de las partidas.
 - Presentar animaciones y efectos.
 - Enviar solicitudes al servidor.
+- Representar visualmente el estado de las máquinas.
+- Mostrar los resultados de las partidas.
 
 El cliente no tendrá autoridad sobre las puntuaciones finales, las reservas de máquinas ni los datos persistentes.
 
 ### Servidor
 
-Se ejecuta en Roblox y será responsable de la lógica importante del juego.
+Se ejecutará en Roblox y será responsable de la lógica importante del juego.
 
 Responsabilidades:
 
@@ -81,8 +98,10 @@ Responsabilidades:
 - Reservar y liberar máquinas.
 - Crear y finalizar sesiones.
 - Validar las acciones de los jugadores.
+- Gestionar las partidas.
 - Controlar las puntuaciones.
 - Gestionar los récords personales.
+- Validar recompensas y desbloqueos.
 - Acceder al almacenamiento persistente.
 
 ### Código compartido
@@ -92,143 +111,225 @@ Contendrá módulos utilizados tanto por el cliente como por el servidor.
 Responsabilidades:
 
 - Configuraciones comunes.
-- Tipos de datos.
 - Constantes.
+- Tipos de datos.
 - Definiciones de interfaces.
-- Utilidades que puedan utilizar ambos entornos.
+- Utilidades compartidas.
 
 No deberá contener secretos ni lógica que necesite permanecer protegida en el servidor.
 
 ## 2.2. Correspondencia con Roblox
 
+La estructura de Rojo utiliza las siguientes correspondencias:
+
 | Directorio del proyecto | Ubicación en Roblox |
 |---|---|
-| `src/client` | `StarterPlayerScripts/Client` |
+| `src/client` | `StarterPlayer/StarterPlayerScripts/Client` |
 | `src/server` | `ServerScriptService/Server` |
 | `src/shared` | `ReplicatedStorage/Shared` |
 
-Los recursos visuales y modelos se organizarán mediante los mecanismos de Roblox y Rojo que se definan durante la implementación.
+El archivo `default.project.json` define estos mapeos.
+
+Los recursos visuales, modelos y elementos del mapa se organizarán mediante los mecanismos de Roblox y Rojo que correspondan.
 
 ---
 
 # 3. Estructura de directorios
 
-La estructura inicial será:
+La estructura actual del proyecto separa el código cliente, servidor y compartido.
 
 ```text
-src/
-├── client/
-│   ├── Controllers/
-│   └── UI/
+Universo Arcade/
 │
-├── server/
-│   ├── Data/
-│   ├── Services/
-│   └── Systems/
+├── src/
+│   ├── client/
+│   │   └── ...
+│   │
+│   ├── server/
+│   │   ├── Main.server.luau
+│   │   └── Services/
+│   │       ├── MapBuilder.luau
+│   │       ├── LightingService.luau
+│   │       ├── ArcadeLightingService.luau
+│   │       ├── WallArchitectureService.luau
+│   │       ├── WallDecorationService.luau
+│   │       └── WallPosterService.luau
+│   │
+│   └── shared/
+│       └── Config/
+│           └── MapConfig.luau
 │
-└── shared/
-    ├── Config/
-    ├── Modules/
-    └── Types/
+├── default.project.json
+├── aftman.toml
+└── ...
 ```
+
+Esta estructura refleja los componentes conocidos del proyecto. Se ampliará a medida que se implementen los sistemas jugables.
 
 ## 3.1. Client
 
-### Controllers
-
 Contendrá los controladores responsables de coordinar las funcionalidades del cliente.
 
-Ejemplos previstos:
+Se prevé organizarlo en:
 
-- ArcadeInteractionController
-- CameraController
-- MinigameController
-- InputController
+### Controllers
+
+Responsables de coordinar las funcionalidades del jugador.
+
+Módulos previstos:
+
+- `ArcadeInteractionController`
+- `CameraController`
+- `MinigameController`
+- `InputController`
 
 ### UI
 
 Contendrá los componentes y pantallas de interfaz.
 
-Ejemplos previstos:
+Elementos previstos:
 
-- ArcadeHUD
-- MinigameUI
-- ScoreUI
-- ResultsUI
+- `ArcadeHUD`
+- `MinigameUI`
+- `ScoreUI`
+- `ResultsUI`
+
+Esta organización se concretará cuando comience la implementación de la interfaz.
 
 ## 3.2. Server
 
+Contendrá la lógica autoritativa del juego.
+
+### Main
+
+`Main.server.luau` es el punto de entrada del servidor.
+
+Se encarga de cargar los servicios y ejecutar la inicialización del proyecto.
+
 ### Services
 
-Contendrá servicios encargados de gestionar funcionalidades centrales del servidor.
+Contiene los servicios encargados de gestionar funcionalidades centrales.
 
-Ejemplos previstos:
+**Servicios implementados actualmente:**
 
-- MachineService
-- SessionService
-- ScoreService
-- PlayerDataService
+| Servicio | Responsabilidad | Estado |
+|---|---|---|
+| `MapBuilder` | Construcción del mapa principal | Implementado |
+| `LightingService` | Iluminación ambiental | Implementado |
+| `ArcadeLightingService` | Iluminación arquitectónica | Implementado |
+| `WallArchitectureService` | Patrones geométricos de paredes | Implementado |
+| `WallDecorationService` | Elementos decorativos superiores | Implementado |
+| `WallPosterService` | Generación de pósteres | Implementado |
+
+**Servicios previstos para la funcionalidad jugable:**
+
+- `MachineService`
+- `SessionService`
+- `ScoreService`
+- `PlayerDataService`
+
+Estos servicios todavía no forman parte de la implementación funcional.
 
 ### Systems
 
-Contendrá sistemas de lógica reutilizable que no necesariamente representan servicios centrales.
+Contendrá sistemas reutilizables que no necesariamente representan servicios centrales.
 
-Ejemplos previstos:
+Sistemas previstos:
 
-- MachineAvailabilitySystem
-- MinigameRegistry
-- SessionLifecycleSystem
+- `MachineAvailabilitySystem`
+- `MinigameRegistry`
+- `SessionLifecycleSystem`
+
+La necesidad de separar estos sistemas en módulos independientes se evaluará durante la implementación.
 
 ### Data
 
 Contendrá estructuras y módulos relacionados con los datos persistentes.
 
-Ejemplos previstos:
+Elementos previstos:
 
-- PlayerDataRepository
-- PlayerDataSchema
-- DataValidation
+- `PlayerDataRepository`
+- `PlayerDataSchema`
+- `DataValidation`
 
 ## 3.3. Shared
+
+Contendrá módulos que puedan utilizar tanto cliente como servidor.
 
 ### Config
 
 Configuraciones generales del proyecto.
 
-Ejemplos:
+**Configuración implementada:**
 
-- Configuración de máquinas.
-- Parámetros generales.
-- Configuración de minijuegos.
+- `MapConfig.luau`
+
+Contiene las dimensiones y parámetros principales del mapa.
+
+Se añadirán progresivamente configuraciones de máquinas y minijuegos.
 
 ### Types
 
-Definiciones de tipos Luau.
+Contendrá definiciones de tipos Luau.
 
-Ejemplos:
+Tipos previstos:
 
-- MachineTypes
-- SessionTypes
-- ScoreTypes
-- PlayerDataTypes
+- `MachineTypes`
+- `SessionTypes`
+- `ScoreTypes`
+- `PlayerDataTypes`
 
 ### Modules
 
-Módulos compartidos y utilidades generales.
+Contendrá módulos compartidos y utilidades generales.
 
-Ejemplos:
+Su organización se definirá conforme aparezcan necesidades reales.
 
-- Constants
-- UtilityModules
-- SharedValidation
-
-Los ejemplos anteriores son propuestas de organización. Los módulos concretos se crearán cuando exista una necesidad real.
+Los ejemplos anteriores son propuestas de organización, no módulos que deban crearse todos desde el principio.
 
 ---
 
-# 4. Arquitectura de máquinas arcade
+# 4. Punto de entrada e inicialización
 
-## 4.1. Concepto
+## 4.1. Main.server.luau
+
+El servidor utiliza `Main.server.luau` como punto de entrada.
+
+Actualmente, su inicialización sigue este orden general:
+
+1. Cargar los servicios necesarios.
+2. Eliminar objetos predeterminados de Studio que no forman parte del mapa.
+3. Construir el mapa principal mediante `MapBuilder`.
+4. Crear el punto de aparición propio.
+5. Aplicar la arquitectura de paredes.
+6. Aplicar la decoración de paredes.
+7. Generar los pósteres.
+8. Aplicar la iluminación ambiental.
+9. Aplicar la iluminación arquitectónica.
+10. Finalizar la inicialización.
+
+El punto de aparición se crea dentro del núcleo central del salón.
+
+La eliminación de los objetos predeterminados afecta al `Baseplate` y al `SpawnLocation` original de Studio. No debe eliminarse el punto de aparición propio del proyecto.
+
+## 4.2. Responsabilidades de los servicios del mapa
+
+Cada servicio mantiene una responsabilidad diferenciada:
+
+- `MapBuilder`: geometría y construcción principal.
+- `LightingService`: configuración ambiental.
+- `ArcadeLightingService`: focos y elementos de iluminación arquitectónica.
+- `WallArchitectureService`: patrones integrados en las paredes.
+- `WallDecorationService`: elementos decorativos superiores.
+- `WallPosterService`: pósteres generados mediante código.
+
+Los servicios visuales no deben modificar innecesariamente la geometría principal del mapa.
+
+---
+
+# 5. Arquitectura de máquinas arcade
+
+## 5.1. Concepto
 
 Cada máquina será una entidad independiente dentro del salón recreativo.
 
@@ -244,33 +345,55 @@ La máquina no deberá contener directamente toda la lógica del minijuego.
 
 Su función será actuar como punto de acceso a una experiencia de juego.
 
-## 4.2. Estados de una máquina
+El salón principal dispone de 28 máquinas, distribuidas en cuatro salas con siete máquinas cada una.
+
+La integración funcional de estas máquinas todavía está pendiente.
+
+## 5.2. Identificación
+
+Cada máquina deberá disponer de un identificador único y estable.
+
+El identificador permitirá:
+
+- Reconocer la máquina.
+- Consultar su configuración.
+- Asociarla a un minijuego.
+- Gestionar su disponibilidad.
+- Relacionarla con una sesión.
+
+La identificación definitiva se establecerá durante la implementación.
+
+No se deberá depender únicamente del nombre visual del modelo para identificar una máquina.
+
+## 5.3. Estados de una máquina
 
 Se contemplan los siguientes estados:
 
 | Estado | Descripción |
 |---|---|
-| Available | Disponible para jugar |
-| Reserved | Reservada por un jugador |
-| InUse | Partida en ejecución |
-| Unavailable | Temporalmente fuera de servicio |
+| `Available` | Disponible para jugar |
+| `Reserved` | Reservada por un jugador |
+| `InUse` | Partida en ejecución |
+| `Unavailable` | Temporalmente fuera de servicio |
 
 Las transiciones deberán estar controladas por el servidor.
 
-## 4.3. Reserva de máquinas
+## 5.4. Reserva de máquinas
 
 Cuando un jugador interactúe con una máquina:
 
 1. El servidor comprobará que el jugador es válido.
 2. Comprobará la distancia de interacción.
-3. Verificará que la máquina existe y está disponible.
-4. Reservará la máquina para el jugador.
-5. Creará una sesión de juego.
-6. Confirmará al cliente que puede comenzar.
+3. Verificará que la máquina existe.
+4. Comprobará que la máquina está disponible.
+5. Validará que el jugador puede utilizarla.
+6. Reservará la máquina para ese jugador.
+7. Creará una sesión de juego.
+8. Confirmará al cliente que puede comenzar.
 
 La reserva deberá realizarse de forma controlada para impedir que dos jugadores ocupen simultáneamente la misma máquina.
 
-## 4.4. Liberación
+## 5.5. Liberación
 
 La máquina deberá volver a estar disponible cuando:
 
@@ -283,9 +406,9 @@ La liberación deberá ser segura e idempotente: ejecutarla varias veces no debe
 
 ---
 
-# 5. Arquitectura de minijuegos
+# 6. Arquitectura de minijuegos
 
-## 5.1. Independencia
+## 6.1. Independencia
 
 Cada minijuego tendrá su propia lógica y estado.
 
@@ -293,22 +416,24 @@ Los sistemas generales no deberán conocer los detalles internos de las mecánic
 
 La comunicación se realizará mediante contratos comunes definidos por la arquitectura.
 
-## 5.2. Registro de minijuegos
+## 6.2. Registro de minijuegos
 
 Se utilizará un registro central que permita identificar los minijuegos disponibles.
 
 Cada entrada deberá proporcionar información suficiente para iniciar una partida del tipo correspondiente.
 
-Ejemplos:
+Minijuegos iniciales:
 
-- BlockPuzzle
-- BubbleShooter
-- SpaceShooter
-- BrickBreaker
+- `BlockPuzzle`
+- `BubbleShooter`
+- `SpaceShooter`
+- `BrickBreaker`
 
 El registro evitará tener que añadir condiciones específicas para cada minijuego en el sistema general de sesiones.
 
-## 5.3. Ciclo de vida
+La implementación definitiva del registro está pendiente.
+
+## 6.3. Ciclo de vida
 
 Todos los minijuegos deberán seguir un ciclo de vida común:
 
@@ -321,7 +446,7 @@ Todos los minijuegos deberán seguir un ciclo de vida común:
 
 La implementación interna podrá variar, pero deberá respetar las responsabilidades y transiciones generales.
 
-## 5.4. Separación de lógica y presentación
+## 6.4. Separación de lógica y presentación
 
 La lógica del minijuego y su representación visual estarán separadas.
 
@@ -335,9 +460,9 @@ La estrategia podrá adaptarse a cada minijuego siempre que se mantenga una vali
 
 ---
 
-# 6. Sistema de sesiones
+# 7. Sistema de sesiones
 
-## 6.1. Concepto
+## 7.1. Concepto
 
 Una sesión representa una partida individual de un jugador en una máquina.
 
@@ -351,32 +476,32 @@ Cada sesión tendrá:
 - Puntuación.
 - Datos específicos de la partida.
 
-## 6.2. Estados de una sesión
+## 7.2. Estados de una sesión
 
 | Estado | Descripción |
 |---|---|
-| Initializing | Preparando la partida |
-| Active | Partida en ejecución |
-| Completed | Finalizada correctamente |
-| Cancelled | Cancelada |
-| Failed | Finalizada por un error |
+| `Initializing` | Preparando la partida |
+| `Active` | Partida en ejecución |
+| `Completed` | Finalizada correctamente |
+| `Cancelled` | Cancelada |
+| `Failed` | Finalizada por un error |
 
 Las transiciones estarán controladas por el servidor.
 
-## 6.3. Independencia de sesiones
+## 7.3. Independencia de sesiones
 
 Cada sesión mantendrá su propio estado.
 
 No se utilizarán variables globales compartidas para almacenar datos específicos de diferentes partidas.
 
-El sistema deberá permitir que varios jugadores ejecuten el mismo minijuego simultáneamente.
+El sistema deberá permitir que varios jugadores ejecuten el mismo minijuego simultáneamente, siempre que utilicen máquinas diferentes.
 
-## 6.4. Relación entre máquinas y sesiones
+## 7.4. Relación entre máquinas y sesiones
 
-La relación será:
+La relación inicial será:
 
 - Una máquina podrá tener como máximo una sesión activa.
-- Un jugador podrá tener como máximo una sesión arcade activa inicialmente.
+- Un jugador podrá tener como máximo una sesión arcade activa.
 - Una sesión pertenecerá a un único jugador.
 - Una sesión estará asociada a una única máquina.
 
@@ -384,28 +509,33 @@ Estas restricciones podrán ampliarse en futuras versiones si el diseño del jue
 
 ---
 
-# 7. Comunicación entre cliente y servidor
+# 8. Comunicación entre cliente y servidor
 
-## 7.1. Principios
+## 8.1. Principios
 
-La comunicación se realizará mediante los mecanismos de red de Roblox, principalmente RemoteEvents y RemoteFunctions cuando corresponda.
+La comunicación se realizará mediante los mecanismos de red de Roblox, principalmente `RemoteEvents` y `RemoteFunctions` cuando corresponda.
 
 Las solicitudes deberán estar claramente definidas.
 
 No se permitirá que el cliente modifique directamente el estado interno del servidor.
 
-## 7.2. Operaciones previstas
+Se priorizará el uso de `RemoteEvents` para solicitudes y notificaciones cuando no sea necesario esperar una respuesta síncrona.
+
+## 8.2. Operaciones previstas
 
 Entre las operaciones iniciales se encuentran:
 
 - Solicitar acceso a una máquina.
+- Recibir confirmación o rechazo.
+- Recibir actualizaciones de disponibilidad.
 - Confirmar el inicio de una sesión.
 - Enviar acciones del minijuego.
 - Solicitar la finalización de una partida.
-- Recibir actualizaciones de estado.
 - Recibir resultados.
 
-## 7.3. Seguridad
+Los nombres y contratos definitivos de los eventos se establecerán durante la implementación.
+
+## 8.3. Seguridad
 
 El servidor deberá validar:
 
@@ -421,15 +551,15 @@ Los datos enviados por el cliente siempre se considerarán no confiables.
 
 ---
 
-# 8. Sistema de puntuaciones
+# 9. Sistema de puntuaciones
 
-## 8.1. Responsabilidad
+## 9.1. Responsabilidad
 
 El servidor será responsable de determinar la puntuación válida.
 
 La puntuación no podrá aceptarse únicamente porque el cliente la comunique.
 
-## 8.2. Validaciones
+## 9.2. Validaciones
 
 Se comprobará:
 
@@ -439,7 +569,7 @@ Se comprobará:
 - Que la partida se encuentre en un estado válido.
 - Que el resultado cumpla las reglas del minijuego.
 
-## 8.3. Récords
+## 9.3. Récords
 
 Cada jugador tendrá un registro independiente por minijuego.
 
@@ -447,26 +577,33 @@ Se conservará el mejor resultado válido.
 
 La actualización de un récord no deberá sustituir un resultado superior por otro inferior.
 
+El sistema de puntuaciones todavía está pendiente de implementación.
+
 ---
 
-# 9. Persistencia de datos
+# 10. Persistencia de datos
 
-## 9.1. Tecnología
+## 10.1. Tecnología
 
-Se utilizará inicialmente DataStoreService de Roblox para almacenar los datos persistentes de los jugadores.
+Se utilizará inicialmente `DataStoreService` de Roblox para almacenar los datos persistentes de los jugadores.
 
 El acceso a este servicio estará limitado al servidor.
 
-## 9.2. Datos previstos
+## 10.2. Datos previstos
 
 El modelo inicial podrá incluir:
 
 - Identificador del jugador.
 - Récord de cada minijuego.
+- Arcade Tokens.
+- Salas desbloqueadas.
+- Datos de personalización.
 - Fecha de actualización.
 - Versión del esquema de datos.
 
-## 9.3. Requisitos
+Los campos se incorporarán progresivamente según se implementen las funcionalidades correspondientes.
+
+## 10.3. Requisitos
 
 El sistema deberá contemplar:
 
@@ -481,17 +618,17 @@ El sistema deberá contemplar:
 
 Se utilizarán operaciones de actualización seguras cuando sea necesario evitar que diferentes servidores sobrescriban información más reciente.
 
-La persistencia no dependerá exclusivamente del evento de salida del jugador.
+## 10.4. Separación de responsabilidades
 
-## 9.4. Separación de responsabilidades
-
-La lógica de juego no accederá directamente a DataStoreService.
+La lógica de juego no accederá directamente a `DataStoreService`.
 
 Los servicios de juego utilizarán una capa de acceso a datos que centralizará las operaciones de lectura y escritura.
 
+La persistencia todavía está pendiente de implementación.
+
 ---
 
-# 10. Seguridad y protección frente a trampas
+# 11. Seguridad y protección frente a trampas
 
 La seguridad será una responsabilidad transversal de la arquitectura.
 
@@ -504,12 +641,13 @@ Se aplicarán los siguientes principios:
 - Se comprobarán los datos recibidos.
 - No se confiará en identificadores enviados por el cliente sin validación.
 - Los datos persistentes solo se modificarán desde el servidor.
+- Las recompensas se calcularán y concederán desde el servidor.
 
 Se evitará exponer información sensible en módulos compartidos o código del cliente.
 
 ---
 
-# 11. Gestión de errores y limpieza
+# 12. Gestión de errores y limpieza
 
 Los sistemas deberán contemplar errores sin dejar recursos ocupados indefinidamente.
 
@@ -522,6 +660,7 @@ Se prestará especial atención a:
 - Errores de almacenamiento.
 - Finalizaciones duplicadas.
 - Referencias a objetos eliminados.
+- Máquinas que queden reservadas accidentalmente.
 
 Los recursos asociados a una sesión deberán liberarse al finalizarla.
 
@@ -529,15 +668,15 @@ La limpieza deberá poder ejecutarse de forma segura aunque algunos pasos anteri
 
 ---
 
-# 12. Pruebas y calidad
+# 13. Pruebas y calidad
 
 Se aplicarán diferentes niveles de pruebas.
 
-## 12.1. Pruebas de módulos
+## 13.1. Pruebas de módulos
 
 Comprobarán las funciones individuales y sus casos límite.
 
-## 12.2. Pruebas de integración
+## 13.2. Pruebas de integración
 
 Comprobarán la interacción entre:
 
@@ -545,22 +684,25 @@ Comprobarán la interacción entre:
 - Sesiones y minijuegos.
 - Minijuegos y puntuaciones.
 - Puntuaciones y persistencia.
+- Jugadores y desbloqueos.
 
-## 12.3. Pruebas multijugador
+## 13.3. Pruebas multijugador
 
 Se comprobarán situaciones con varios jugadores y varias máquinas.
 
-## 12.4. Pruebas de errores
+Se prestará especial atención a las reservas simultáneas y a la independencia de las sesiones.
 
-Se probarán desconexiones, solicitudes inválidas y fallos de almacenamiento.
+## 13.4. Pruebas de errores
+
+Se probarán desconexiones, solicitudes inválidas, finalizaciones duplicadas y fallos de almacenamiento.
 
 Una funcionalidad no se considerará terminada hasta superar las pruebas relevantes para su responsabilidad.
 
 ---
 
-# 13. Convenciones de desarrollo
+# 14. Convenciones de desarrollo
 
-## 13.1. Nomenclatura
+## 14.1. Nomenclatura
 
 Se utilizarán nombres descriptivos y coherentes.
 
@@ -572,7 +714,7 @@ Se utilizarán nombres descriptivos y coherentes.
 | Tipos Luau | PascalCase | `SessionData` |
 | Constantes | UPPER_SNAKE_CASE | `MAX_SESSION_TIME` |
 
-## 13.2. Código
+## 14.2. Código
 
 - Preferir módulos pequeños y con una responsabilidad clara.
 - Evitar duplicación de lógica.
@@ -581,10 +723,11 @@ Se utilizarán nombres descriptivos y coherentes.
 - Documentar decisiones complejas.
 - No introducir abstracciones innecesarias.
 - Mantener las funciones fáciles de probar.
+- Centralizar las configuraciones que deban compartirse.
 
-## 13.3. Control de versiones
+## 14.3. Control de versiones
 
-Se utilizará Git para registrar los cambios.
+Se utilizará Git para registrar los cambios del proyecto.
 
 Los commits seguirán la convención:
 
@@ -592,119 +735,90 @@ Los commits seguirán la convención:
 
 Se evitarán commits que mezclen funcionalidades independientes.
 
----
-
-# 14. Evolución de la arquitectura
-
-La arquitectura inicial está diseñada para cubrir las necesidades de las primeras versiones.
-
-Se contempla la incorporación futura de:
-
-- Más minijuegos.
-- Clasificaciones entre amigos.
-- Clasificaciones globales.
-- Economía y recompensas.
-- Sistemas de personalización.
-- Mejoras de localización.
-- Compatibilidad con dispositivos móviles y consolas.
-
-Estas ampliaciones no deberán incorporarse antes de que exista una necesidad real.
-
-Se evitará diseñar sistemas complejos para funcionalidades que todavía no forman parte del alcance de desarrollo.
+Los cambios se probarán antes de considerarlos terminados y antes de crear un checkpoint estable.
 
 ---
 
-# 15. Decisiones técnicas pendientes
+# 15. Sistemas futuros de progresión y monetización
 
-Las siguientes decisiones se concretarán durante la implementación:
+Esta sección define la arquitectura prevista para los sistemas económicos y de desbloqueo de Universo Arcade.
 
-- Contratos definitivos de los minijuegos.
-- Organización final de los RemoteEvents y RemoteFunctions.
-- Estrategia de simulación y validación de cada minijuego.
-- Modelo definitivo de persistencia.
-- Estrategia de pruebas automatizadas.
-- Gestión de versiones del esquema de datos.
-- Organización de los recursos visuales.
-- Estrategia de localización.
+Su inclusión en el diseño técnico no implica que deban implementarse durante la primera versión.
 
-Cada decisión importante deberá documentarse cuando se tome.
-
----
-
-# 16. Estado de la arquitectura
-
-**Estado actual:** diseño inicial documentado.
-
-La arquitectura todavía no está implementada.
-
-El siguiente objetivo será validar la sincronización con Roblox Studio y comenzar la implementación de los fundamentos técnicos, empezando por los sistemas compartidos y la gestión de máquinas y sesiones.
-
-## Sistemas futuros de progresión y monetización
-
-Esta sección define la arquitectura prevista para los sistemas económicos y de desbloqueo de Universo Arcade. Su inclusión en el diseño técnico no implica que deban implementarse durante la primera versión.
-
-### 17. CurrencyService
+## 15.1. CurrencyService
 
 Responsable de gestionar los Arcade Tokens (AT).
 
 Responsabilidades:
+
 - Consultar el saldo del jugador.
 - Añadir o descontar moneda.
 - Validar que las operaciones sean legítimas.
 - Registrar las recompensas obtenidas al finalizar partidas.
-- Guardar y recuperar el saldo mediante DataStoreService.
+- Guardar y recuperar el saldo mediante `DataStoreService`.
 
-Las operaciones económicas estarán controladas por el servidor. El cliente nunca podrá establecer directamente su propio saldo ni decidir cuántas monedas recibe.
+Las operaciones económicas estarán controladas por el servidor.
 
-### 18. UnlockService
+El cliente nunca podrá establecer directamente su propio saldo ni decidir cuántas monedas recibe.
+
+## 15.2. UnlockService
 
 Gestionará los desbloqueos permanentes de salas.
 
 Responsabilidades:
+
 - Consultar las salas desbloqueadas por un jugador.
 - Validar si dispone de AT suficientes.
 - Procesar los desbloqueos.
 - Evitar compras duplicadas de una misma sala.
-- Persistir los desbloqueos asociados al UserId.
+- Persistir los desbloqueos asociados al `UserId`.
 
-Cada jugador tendrá su propia progresión. Los desbloqueos no se compartirán entre amigos ni dependerán de quién haya creado el servidor.
+Cada jugador tendrá su propia progresión.
 
-### 19. RoomAccess y RoomPresentation
+Los desbloqueos no se compartirán entre amigos ni dependerán de quién haya creado el servidor.
 
-Separaremos la validación real del acceso de su representación visual.
+## 15.3. RoomAccess y RoomPresentation
 
-**RoomAccess (servidor):**
+Se separará la validación real del acceso de su representación visual.
+
+**RoomAccess — servidor**
+
 - Comprobará si el jugador tiene permiso para entrar.
 - Bloqueará el acceso a salas no desbloqueadas.
 - Validará también el acceso a las máquinas y minijuegos de cada sala.
 
-**RoomPresentation (cliente):**
+**RoomPresentation — cliente**
+
 - Representará visualmente las puertas y accesos según los desbloqueos individuales.
 - Mostrará las salas disponibles y las pendientes de desbloqueo.
 - Permitirá que dos jugadores vean estados diferentes de una misma puerta.
 
 La representación visual nunca sustituirá a la validación del servidor.
 
-### 20. MonetizationService
+## 15.4. MonetizationService
 
-Gestionará las compras opcionales con Robux utilizando MarketplaceService.
+Gestionará las compras opcionales con Robux utilizando `MarketplaceService`.
 
 Responsabilidades:
-- Procesar productos de desarrollador (Developer Products).
-- Gestionar posibles pases de juego (Game Passes).
+
+- Procesar productos de desarrollador (`Developer Products`).
+- Gestionar posibles pases de juego (`Game Passes`).
 - Aplicar multiplicadores de obtención de AT.
 - Gestionar la entrega de productos cosméticos.
 - Validar las compras desde el servidor.
 
 Las entregas de Developer Products deberán ser idempotentes: una misma compra no podrá entregar recompensas duplicadas, incluso si Roblox vuelve a notificar su recibo.
 
-Los multiplicadores de AT afectarán exclusivamente a la moneda obtenida. Nunca modificarán las puntuaciones, el rendimiento de las máquinas ni las condiciones competitivas.
+Los multiplicadores de AT afectarán exclusivamente a la moneda obtenida.
 
-### 21. CosmeticService
+Nunca modificarán las puntuaciones, el rendimiento de las máquinas ni las condiciones competitivas.
+
+## 15.5. CosmeticService
 
 Gestionará los elementos de personalización del jugador.
 
 Podrá incluir:
+
 - Skins.
 - Estelas.
 - Efectos visuales.
@@ -713,7 +827,7 @@ Podrá incluir:
 
 Los cosméticos estarán separados de los sistemas de puntuación y de la lógica de los minijuegos.
 
-### 22. Reglas arquitectónicas obligatorias
+## 15.6. Reglas obligatorias
 
 - Todas las máquinas serán gratuitas.
 - No existirá un sistema de compra individual de máquinas.
@@ -723,9 +837,7 @@ Los cosméticos estarán separados de los sistemas de puntuación y de la lógic
 - El cliente solo solicitará operaciones y representará sus resultados.
 - Ninguna compra podrá modificar puntuaciones ni proporcionar ventajas competitivas.
 
-### 23. Orden previsto de implementación
-
-Estos sistemas se implementarán progresivamente en las versiones posteriores de Universo Arcade:
+## 15.7. Orden previsto de implementación
 
 1. Persistencia de datos del jugador.
 2. Sistema de recompensas y Arcade Tokens.
@@ -736,4 +848,85 @@ Estos sistemas se implementarán progresivamente en las versiones posteriores de
 
 No se implementará la economía antes de disponer de minijuegos funcionales y una experiencia jugable que permita evaluar correctamente las recompensas.
 
-La arquitectura deberá permitir incorporar estos sistemas sin modificar innecesariamente el funcionamiento interno de las máquinas y los minijuegos.
+---
+
+# 16. Decisiones técnicas pendientes
+
+Las siguientes decisiones se concretarán durante la implementación:
+
+- Contratos definitivos de los minijuegos.
+- Identificadores y configuración de las máquinas.
+- Organización final de los `RemoteEvents` y `RemoteFunctions`.
+- Estrategia de simulación y validación de cada minijuego.
+- Modelo definitivo de persistencia.
+- Estrategia de pruebas automatizadas.
+- Gestión de versiones del esquema de datos.
+- Organización de los recursos visuales.
+- Estrategia de localización.
+- Gestión de errores y registros de depuración.
+
+Cada decisión importante deberá documentarse cuando se tome.
+
+---
+
+# 17. Estado actual de la arquitectura
+
+La arquitectura del proyecto se encuentra en una fase inicial de implementación.
+
+## 17.1. Implementado
+
+- [x] Estructura básica de cliente, servidor y código compartido.
+- [x] Configuración de Rojo.
+- [x] Punto de entrada del servidor.
+- [x] Construcción procedural del mapa.
+- [x] Configuración de iluminación ambiental.
+- [x] Iluminación arquitectónica.
+- [x] Arquitectura decorativa de paredes.
+- [x] Generación de elementos decorativos superiores.
+- [x] Generación de pósteres.
+- [x] Punto de aparición propio.
+- [x] Configuración centralizada de las dimensiones principales del mapa.
+
+## 17.2. Diseñado, pero pendiente de implementación
+
+- [ ] Registro de máquinas.
+- [ ] Sistema de interacción.
+- [ ] Gestión de disponibilidad.
+- [ ] Reservas de máquinas.
+- [ ] Sistema de sesiones.
+- [ ] Ciclo de vida de los minijuegos.
+- [ ] Comunicación de partidas.
+- [ ] Sistema de puntuaciones.
+- [ ] Persistencia de datos.
+- [ ] Gestión de récords.
+
+## 17.3. Planificado para versiones posteriores
+
+- [ ] Arcade Tokens.
+- [ ] Sistema de recompensas.
+- [ ] Desbloqueo de salas.
+- [ ] Accesos individuales.
+- [ ] Clasificaciones.
+- [ ] Monetización opcional.
+- [ ] Personalización cosmética.
+
+## 17.4. Próximo objetivo técnico
+
+El siguiente objetivo será implementar el sistema común de máquinas arcade.
+
+El orden de trabajo previsto es:
+
+1. Verificar la sincronización entre Visual Studio Code y Roblox Studio mediante Rojo.
+2. Consolidar y guardar la versión actual del proyecto.
+3. Definir la identificación y configuración de las máquinas.
+4. Implementar la interacción entre jugador y máquina.
+5. Implementar la disponibilidad y las reservas.
+6. Crear el sistema de sesiones.
+7. Integrar el primer minijuego.
+8. Reutilizar la arquitectura para los demás minijuegos.
+
+La implementación deberá realizarse de forma incremental, probando cada sistema antes de continuar con el siguiente.
+
+---
+
+*Este documento define la arquitectura técnica de Universo Arcade. Las funcionalidades descritas como diseñadas o planificadas no se considerarán implementadas hasta que exista código funcional y hayan superado las pruebas correspondientes.*

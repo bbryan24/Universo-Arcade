@@ -7,8 +7,9 @@
 | Plataforma | Roblox |
 | Público objetivo | Jugadores de Roblox interesados en experiencias arcade y competición casual |
 | Estado | En desarrollo |
-| Versión del documento | 0.1 |
+| Versión del documento | 0.2 |
 | Versión objetivo inicial | 0.1 |
+| Última actualización | Noviembre de 2026 |
 | Idioma base | Inglés |
 | Idioma adicional inicial | Español |
 
@@ -46,27 +47,51 @@ El desarrollo de Universo Arcade se apoyará en cinco pilares:
 
 El escenario principal será un salón recreativo inspirado en los establecimientos arcade de las décadas de 1980 y 1990.
 
-Se buscará una estética retro estilizada, con geometría sencilla, elementos low-poly y una combinación de iluminación cálida y colores neón.
+La dirección artística combina elementos retro y futuristas: geometría sencilla, superficies oscuras, patrones geométricos, colores neón controlados y elementos decorativos inspirados en la tecnología arcade.
 
 El entorno deberá transmitir una sensación acogedora, divertida y ligeramente nostálgica.
 
+La iluminación y la arquitectura del salón principal ya cuentan con una primera implementación aprobada. Las siguientes tareas visuales se centrarán en los detalles decorativos pendientes y en las futuras zonas del edificio.
+
 ## 2.2. Elementos visuales
 
-Entre los elementos previstos se encuentran:
+El salón principal incorpora o contempla los siguientes elementos:
 
-- Suelos de baldosas y patrones geométricos.
+- Suelo oscuro de estética arcade, con acabado similar a una moqueta y patrones geométricos.
+- Caminos de color diferenciado que conectan las salas con el núcleo central.
 - Máquinas arcade con diseños y colores diferenciados.
-- Rótulos luminosos y carteles.
-- Iluminación ambiental cálida.
-- Luces de neón y elementos decorativos.
-- Zona social para jugadores.
-- Elementos decorativos relacionados con la cultura arcade.
+- Cuatro salas temáticas.
+- Arquitectura interior y exterior del salón.
+- Techo estructural y elementos arquitectónicos.
+- Iluminación ambiental y focos arquitectónicos.
+- Patrones integrados en las paredes interiores.
+- Carteles y pósteres decorativos.
+- Elementos de señalización y detalles retrofuturistas.
+- Futuras zonas sociales y de acceso.
 
 ## 2.3. Identidad de las máquinas
 
 Cada máquina tendrá una identidad visual propia, relacionada con el minijuego que contiene.
 
 Las máquinas deberán ser reconocibles a distancia y mantener una coherencia estética con el resto del salón.
+
+## 2.4. Estado visual actual
+
+El salón principal dispone de una primera construcción completa de su arquitectura esencial:
+
+- Distribución de las cuatro salas.
+- Núcleo central y corredores.
+- Suelo y caminos.
+- Máquinas arcade colocadas.
+- Paredes y separaciones.
+- Techo y estructura.
+- Iluminación ambiental y arquitectónica.
+- Primera decoración geométrica de las paredes.
+- Primera implementación de carteles y pósteres.
+
+La arquitectura y la iluminación están aprobadas. Los pósteres están implementados, pero su posición todavía necesita ajustes para que queden dentro de las salas y no sobre los marcos de las puertas.
+
+La decoración secundaria no debe impedir que se avance en los sistemas jugables. La prioridad actual pasa a ser la funcionalidad de las máquinas.
 
 ---
 
@@ -88,6 +113,8 @@ La experiencia básica del jugador seguirá este recorrido:
 10. Se actualiza el récord personal si corresponde.
 11. El jugador regresa a la exploración del salón.
 
+Este flujo representa el objetivo funcional del juego. Todavía debe implementarse el sistema general de interacción, reserva y sesiones de las máquinas.
+
 ## 3.2. Interacción con las máquinas
 
 Las máquinas serán objetos físicos dentro del escenario.
@@ -98,6 +125,7 @@ Se utilizará una combinación de elementos:
 
 - Proximidad física a la máquina.
 - Indicaciones de interacción.
+- Comprobación de disponibilidad.
 - Interfaz gráfica para el minijuego.
 - Cámara adaptada a la experiencia de juego.
 
@@ -141,6 +169,8 @@ Características previstas:
 - Eliminación de líneas completas.
 - Incremento progresivo de dificultad.
 - Sistema de puntuación.
+
+Será el primer minijuego que se desarrollará como experiencia funcional completa.
 
 ### 4.2.2. Bubble Shooter
 
@@ -196,7 +226,9 @@ Se buscará reutilizar los siguientes elementos:
 - Registro de resultados.
 - Gestión de récords personales.
 
-Cada minijuego conservará su propia lógica y estado de partida.
+Cada minijuego conservará su propia lógica y estado.
+
+La implementación comenzará con Block Puzzle. La arquitectura se ajustará a partir de las necesidades reales de esa primera experiencia antes de extenderla a los demás minijuegos.
 
 ---
 
@@ -273,19 +305,35 @@ Las clasificaciones sociales y mundiales se incorporarán progresivamente.
 
 # 7. Economía y recompensas
 
-La economía no formará parte de la primera versión.
+La economía no formará parte de la primera versión funcional.
 
 En futuras versiones se estudiará la incorporación de:
 
-- Monedas obtenidas jugando.
-- Desbloqueo de elementos cosméticos.
+- Arcade Tokens obtenidos jugando.
+- Desbloqueo de salas y elementos cosméticos.
 - Personalización de determinados elementos.
 - Recompensas por objetivos.
 - Nuevas máquinas y contenidos.
 
-Las máquinas básicas deberán seguir siendo accesibles.
+Las máquinas iniciales deberán seguir siendo accesibles gratuitamente.
 
 La monetización, si se incorpora, deberá respetar la experiencia de juego y evitar ventajas competitivas injustas.
+
+## 7.1. Arcade Tokens
+
+Arcade Tokens (AT) será el nombre de la moneda interna.
+
+Se podrán conseguir jugando, completando desafíos, participando en eventos y mediante otras actividades de progresión.
+
+Su utilización principal será desbloquear nuevas salas y contenido de progresión.
+
+## 7.2. Monetización
+
+El modelo elegido será Pay to Fast, no Pay to Win.
+
+Se podrán ofrecer multiplicadores de obtención de AT, packs de moneda y elementos cosméticos.
+
+Las compras no podrán modificar las puntuaciones, proporcionar ventajas competitivas ni hacer obligatorio el gasto para disfrutar del contenido jugable.
 
 ---
 
@@ -297,7 +345,7 @@ El desarrollo inicial estará centrado en PC.
 
 Se priorizarán los controles mediante teclado y ratón.
 
-La compatibilidad con dispositivos móviles y consolas se abordará posteriormente.
+La compatibilidad con dispositivos móviles y consolas se abordará posteriormente, procurando que las decisiones iniciales no impidan su incorporación.
 
 ## 8.2. Interfaz
 
@@ -329,6 +377,7 @@ En futuras versiones se estudiarán funcionalidades sociales adicionales, como:
 - Comparación de récords.
 - Nuevos elementos de interacción social.
 - Eventos y desafíos.
+- Zona social compartida.
 
 ---
 
@@ -374,7 +423,7 @@ La primera versión funcional deberá permitir:
 7. Guardar el récord personal.
 8. Volver a entrar y recuperar el récord.
 
-La prioridad será conseguir una experiencia completa y estable, aunque inicialmente solo exista una máquina.
+La prioridad será conseguir una experiencia completa y estable, aunque inicialmente solo exista una máquina funcional.
 
 ---
 
@@ -392,6 +441,7 @@ El proyecto seguirá los siguientes principios:
 - Realizar pruebas incrementales.
 - Evitar dependencias innecesarias.
 - Diseñar pensando en futuras ampliaciones.
+- Priorizar la funcionalidad jugable frente a la decoración secundaria.
 
 ---
 
@@ -407,28 +457,79 @@ Las siguientes funcionalidades no serán necesarias para alcanzar la versión 0.
 - Compatibilidad completa con todas las plataformas.
 - Eventos y temporadas.
 - Sistemas avanzados de personalización.
+- Desbloqueo de salas adicionales.
 
 Estas funcionalidades podrán incorporarse cuando los sistemas fundamentales estén terminados y probados.
 
 ---
 
-# 14. Estado del documento
+# 14. Estado actual del proyecto
 
-Este documento representa la visión inicial de Universo Arcade.
+El proyecto dispone de un entorno de desarrollo basado en Roblox Studio, VS Code, Luau, Rojo y Git.
 
-Las decisiones podrán evolucionar durante el desarrollo, pero cualquier modificación importante deberá quedar reflejada en la documentación técnica y en el historial de cambios del proyecto.
+El salón principal ya cuenta con una primera implementación física y visual.
 
-## 15. Expansión del arcade y progresión
+### Elementos construidos
+
+- Salón principal de 120 × 100 studs.
+- Cuatro salas temáticas.
+- Núcleo central circular.
+- Cuatro corredores.
+- 28 máquinas arcade colocadas, siete por sala.
+- Suelo oscuro con acabado de estética arcade.
+- Caminos diferenciados hacia las salas.
+- Patrones geométricos en el suelo.
+- Arquitectura de paredes interiores.
+- Patrones decorativos propios para las cuatro salas.
+- Carteles y pósteres decorativos en una primera implementación.
+- Techo estructural.
+- Iluminación ambiental y arquitectónica.
+- Punto de aparición configurado para evitar que el jugador aparezca fuera del mapa.
+- Eliminación o corrección de elementos predeterminados que interferían con el escenario.
+
+### Elementos aprobados
+
+- Distribución general del salón.
+- Geometría principal.
+- Suelo y caminos.
+- Arquitectura interior.
+- Techo.
+- Iluminación.
+- Patrones geométricos de paredes.
+
+### Elementos pendientes de ajuste visual
+
+- Recolocar los pósteres para que queden dentro de las salas y no sobre los marcos de las puertas.
+- Completar detalles decorativos secundarios cuando no interfieran con el desarrollo de las máquinas.
+
+### Estado jugable
+
+Las máquinas están colocadas físicamente, pero todavía está pendiente implementar su funcionalidad:
+
+- Interacción.
+- Disponibilidad y reserva.
+- Sesiones individuales.
+- Interfaz de juego.
+- Integración del primer minijuego.
+- Puntuaciones.
+- Récords personales y persistencia.
+
+La siguiente prioridad es desarrollar el sistema común de máquinas y conseguir una primera partida completa de Block Puzzle.
+
+---
+
+# 15. Expansión del arcade y progresión
 
 Universo Arcade estará diseñado para crecer mediante nuevas zonas, habitaciones y experiencias jugables.
 
 El salón inicial será gratuito y contendrá los cuatro minijuegos originales. Las futuras actualizaciones podrán incorporar nuevas salas temáticas conectadas al edificio principal.
 
-### 15.1. Salas desbloqueables
+## 15.1. Salas desbloqueables
 
-Las salas adicionales podrán desbloquearse utilizando la moneda interna del juego, Arcade Tokens (AT).
+Las salas adicionales podrán desbloquearse utilizando Arcade Tokens (AT).
 
 Reglas:
+
 - El desbloqueo será permanente e individual.
 - Cada nueva sala incluirá al menos dos minijuegos disponibles desde el momento de su desbloqueo.
 - Los minijuegos adicionales podrán conseguirse mediante la progresión gratuita.
@@ -436,7 +537,7 @@ Reglas:
 - No será necesario realizar pagos con Robux para disfrutar del contenido jugable.
 - El jugador podrá seguir progresando hasta desbloquear todo el contenido jugable.
 
-### 15.2. Acceso individual
+## 15.2. Acceso individual
 
 Cada jugador tendrá sus propios desbloqueos.
 
@@ -446,13 +547,15 @@ Dos jugadores que compartan servidor podrán ver estados diferentes de una misma
 
 Cuando un jugador invite a sus amigos, estos necesitarán disponer de sus propios desbloqueos para entrar en las salas correspondientes.
 
-## 16. Economía y monetización
+---
+
+# 16. Economía y monetización
 
 La economía tendrá como objetivo recompensar la actividad del jugador y permitir que el proyecto genere ingresos sin perjudicar la competición.
 
-### 16.1. Arcade Tokens
+## 16.1. Arcade Tokens
 
-Arcade Tokens (AT) será el nombre provisional de la moneda interna.
+Arcade Tokens (AT) será la moneda interna.
 
 Se podrán conseguir jugando, completando desafíos, participando en eventos y mediante otras actividades de progresión.
 
@@ -462,11 +565,12 @@ El equilibrio económico deberá permitir avanzar a un ritmo razonable sin neces
 
 No se utilizarán esperas artificiales ni requisitos excesivamente largos para forzar el gasto de Robux.
 
-### 16.2. Monetización mediante Robux
+## 16.2. Monetización mediante Robux
 
 Universo Arcade podrá incorporar compras opcionales con Robux.
 
 Se permitirá:
+
 - Multiplicadores de obtención de Arcade Tokens, como un x2.
 - Packs de Arcade Tokens.
 - Estelas, skins y efectos visuales.
@@ -475,11 +579,12 @@ Se permitirá:
 
 Las compras deberán facilitar la progresión o ampliar las opciones visuales, nunca proporcionar ventajas competitivas.
 
-### 16.3. Juego competitivo justo
+## 16.3. Juego competitivo justo
 
 La habilidad del jugador será el único factor determinante de sus puntuaciones y posiciones competitivas.
 
 Queda expresamente descartado:
+
 - Multiplicadores de puntuación comprables.
 - Ventajas de rendimiento en los minijuegos por pagar.
 - Récords o posiciones de clasificación comprables.
@@ -488,7 +593,7 @@ Queda expresamente descartado:
 
 Los jugadores que no gasten Robux deberán poder conseguir todo el contenido jugable mediante la progresión normal.
 
-### 16.4. Principio de monetización
+## 16.4. Principio de monetización
 
 El modelo elegido será Pay to Fast, no Pay to Win.
 
@@ -496,7 +601,9 @@ El jugador podrá conseguir todo jugando, pero tendrá la posibilidad de acelera
 
 La monetización nunca deberá perjudicar artificialmente el ritmo de progresión gratuito ni convertir las clasificaciones en una competición económica.
 
-## 17. Principios de diseño económico
+---
+
+# 17. Principios de diseño económico
 
 1. La habilidad siempre estará por encima del gasto.
 2. Ninguna compra podrá mejorar las puntuaciones.
@@ -506,3 +613,12 @@ La monetización nunca deberá perjudicar artificialmente el ritmo de progresió
 6. Los accesos serán permanentes e individuales.
 7. Las compras serán opcionales.
 8. La economía deberá resultar razonable tanto para jugadores gratuitos como para quienes decidan apoyar el proyecto económicamente.
+
+---
+
+# 18. Historial del documento
+
+| Versión | Fecha | Cambios |
+|---|---|---|
+| 0.1 | Inicial | Visión, diseño y alcance inicial del proyecto. |
+| 0.2 | Noviembre de 2026 | Actualización del estado real del salón, dirección artística, dimensiones, máquinas colocadas y prioridad de desarrollo jugable. |
