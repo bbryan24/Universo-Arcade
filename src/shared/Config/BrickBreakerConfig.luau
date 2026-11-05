@@ -63,6 +63,7 @@ BrickBreakerConfig.PowerUps = {
         Shield = 12,
         Fireball = 8,
         MultiBall = 7,
+        Magnet = 8,
     },
 
     -- PALA AMPLIADA
@@ -91,6 +92,9 @@ BrickBreakerConfig.PowerUps = {
     MultiBallMaximum = 3,
     MultiBallAngle = 25,
     MultiBallDuplicatePoints = 100,
+
+    -- IMÁN
+    MagnetDuration = 8,
 
     -- MENSAJES
     MessageDuration = 2,
