@@ -10,8 +10,26 @@
 ]]
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local MachineSessionService = {}
+
+-- Comunicación entre servidor y cliente.
+local remotesFolder = ReplicatedStorage:FindFirstChild("Remotes")
+
+if not remotesFolder then
+    remotesFolder = Instance.new("Folder")
+    remotesFolder.Name = "Remotes"
+    remotesFolder.Parent = ReplicatedStorage
+end
+
+local sessionRemote = remotesFolder:FindFirstChild("MachineSessionRemote")
+
+if not sessionRemote then
+    sessionRemote = Instance.new("RemoteEvent")
+    sessionRemote.Name = "MachineSessionRemote"
+    sessionRemote.Parent = remotesFolder
+end
 
 -- Sesiones activas por jugador.
 local activeSessionsByPlayer = {}
@@ -69,6 +87,15 @@ function MachineSessionService.EndSession(player, reason)
     print("Máquina:", session.machineId)
     print("Motivo:", reason or "Sin especificar")
     print("----------------------------------------")
+
+    -- Avisar al cliente de que su sesión ha terminado.
+    if player.Parent == Players then
+        sessionRemote:FireClient(
+            player,
+            "Ended",
+            reason or "Sin especificar"
+        )
+    end
 
     return true
 end
@@ -157,8 +184,28 @@ function MachineSessionService.StartSession(player, machine)
     print("Minijuego:", session.minigameId)
     print("----------------------------------------")
 
+        -- Avisar al cliente de que ha comenzado una sesión.
+    sessionRemote:FireClient(
+        player,
+        "Started",
+        machine,
+        session.minigameId
+    )
+
     return true
 end
+
+-- Recibir solicitudes de salida desde el cliente.
+sessionRemote.OnServerEvent:Connect(function(player, action)
+
+    if action == "RequestEnd" then
+        MachineSessionService.EndSession(
+            player,
+            "Salida voluntaria"
+        )
+    end
+
+end)
 
 -- Liberar la sesión cuando alguien abandona el servidor.
 Players.PlayerRemoving:Connect(function(player)
