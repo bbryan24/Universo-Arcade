@@ -716,7 +716,7 @@ function MachineInterface.Create(
             AnchorPoint = Vector2.new(0.5, 0.5),
             Position = position,
 
-            Size = UDim2.fromScale(0.48, 0.16),
+            Size = UDim2.fromScale(0.38, 0.14),
 
             BackgroundColor3 = theme.Secondary,
             BorderSizePixel = 0,
@@ -724,7 +724,7 @@ function MachineInterface.Create(
             Text = text,
             TextColor3 = COLORS.White,
 
-            TextSize = 16,
+            TextSize = 18,
             Font = Enum.Font.GothamBold,
 
             AutoButtonColor = true,
@@ -741,9 +741,6 @@ function MachineInterface.Create(
         return button
 
     end
-
-    -- PANTALLA INICIAL
-
     
     -- PANTALLA INICIAL
     -- ESTILO ARCADE CLÁSICO PRESS START
@@ -984,6 +981,62 @@ function MachineInterface.Create(
         "ExitConfirmation"
     )
 
+--==================================================
+-- PANTALLA DE PAUSA
+--==================================================
+
+    local pauseView = createView(
+        "PauseView",
+        "Pause"
+    )
+
+    local pausePanel = createViewPanel(
+        pauseView,
+        "PAUSED",
+        "GAME SUSPENDED"
+    )
+
+    -- BOTÓN REANUDAR
+
+createViewButton(
+    pausePanel,
+    "ResumeButton",
+    "RESUME",
+    UDim2.fromScale(0.30, 0.80),
+    function()
+
+        if currentView ~= "Pause" then
+            return
+        end
+
+        showView("Gameplay")
+
+        if onResume then
+            onResume()
+        end
+
+    end
+)
+
+-- BOTÓN SALIR
+
+    createViewButton(
+        pausePanel,
+        "ExitGameButton",
+        "EXIT GAME",
+        UDim2.fromScale(0.70, 0.80),
+        function()
+
+            if currentView ~= "Pause" then
+                return
+            end
+
+            previousView = "Pause"
+            showView("ExitConfirmation")
+
+        end
+    )
+
     local exitPanel = createViewPanel(
         exitView,
         "¿ABANDONAR PARTIDA?",
@@ -1192,31 +1245,25 @@ function MachineInterface.Create(
 
     end
 
-    function interface.ShowExitConfirmation()
+    function interface.ShowPauseScreen()
 
-        if currentView == "ExitConfirmation" then
-            return
-        end
-
-        if currentView ~= "Gameplay"
-            and currentView ~= "LevelTransition"
+        if currentView == "Pause"
+            or currentView == "ExitConfirmation"
         then
-
-            if onExit then
-                onExit()
-            end
-
             return
-
         end
 
-        previousView = currentView
+        if currentView ~= "Gameplay" then
+            return
+        end
 
-        if currentView == "Gameplay" and onPause then
+        previousView = "Gameplay"
+
+        if onPause then
             onPause()
         end
 
-        showView("ExitConfirmation")
+        showView("Pause")
 
     end
 
@@ -1336,7 +1383,7 @@ function MachineInterface.Create(
             or currentView == "LevelTransition"
         then
 
-            interface.ShowExitConfirmation()
+            interface.ShowPauseScreen()
 
         else
 
