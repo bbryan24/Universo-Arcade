@@ -2,7 +2,7 @@
 
 **INSERT COIN. PLAY FOREVER.**
 
-Universo Arcade is a retro-inspired arcade experience built on Roblox. Players can explore a colorful arcade, interact with physical arcade machines and compete in a collection of classic-inspired minigames.
+Universo Arcade is a retro-inspired arcade experience built on Roblox. Players can explore a colorful arcade, interact with physical arcade machines and enjoy a collection of classic-inspired minigames.
 
 The project focuses on modular architecture, independent game sessions, fair competition and persistent personal records.
 
@@ -12,7 +12,56 @@ The project focuses on modular architecture, independent game sessions, fair com
 
 Create a social arcade where players can enjoy different minigames, compete for high scores and gradually discover new experiences.
 
-The initial goal is to deliver one fully playable arcade machine and establish the technical foundations for future minigames.
+The initial goal is to deliver a complete and stable playable arcade machine while establishing the technical foundations for future minigames and shared systems.
+
+## Current progress
+
+The project already includes:
+
+- A main arcade environment with four themed rooms.
+- 28 physical arcade machines arranged throughout the arcade.
+- A central area and connecting corridors.
+- Custom architecture, flooring and decorative elements.
+- Ambient and architectural lighting.
+- An initial Rojo-based development workflow.
+- An advanced implementation of BrickBreaker, including gameplay mechanics, controls, power-ups, level transitions and game interfaces.
+
+The arcade environment's main architecture and lighting have been approved.
+
+The general machine interaction, reservation and session systems are still pending. Persistent personal high scores have also not yet been implemented.
+
+## Minigames
+
+| Minigame | Inspiration | Status |
+|---|---|---|
+| BrickBreaker | Breakout-style gameplay | Advanced development |
+| Block Puzzle | Classic block-placement puzzle games | Planned |
+| Bubble Shooter | Puzzle Bobble-style gameplay | Planned |
+| Space Shooter | Space Invaders-style gameplay | Planned |
+
+All minigames will feature original implementations and assets while taking inspiration from classic arcade gameplay.
+
+## BrickBreaker
+
+BrickBreaker is currently the most advanced minigame in the project.
+
+Implemented features include:
+
+- Paddle and ball gameplay.
+- Destructible blocks.
+- Lives and scoring systems.
+- Progressive levels.
+- Temporary power-ups and effects.
+- Keyboard and mouse controls.
+- PRESS START initial screen.
+- Pause menu with resume and exit options.
+- Exit confirmation.
+- Automatic level transitions.
+- Full-screen GAME OVER screen.
+- Final score display.
+- Restarting with Space or mouse click.
+
+Persistent high-score storage and integration with the general arcade machine and session systems are still pending.
 
 ## Planned features
 
@@ -21,18 +70,10 @@ The initial goal is to deliver one fully playable arcade machine and establish t
 - Persistent personal high scores.
 - Retro-inspired visual design.
 - Modular minigame architecture.
+- Multiple simultaneous arcade sessions.
 - Future leaderboards and progression systems.
-
-## Initial minigames
-
-| Minigame | Inspiration | Status |
-|---|---|---|
-| Block puzzle | Tetris-style gameplay | Planned |
-| Bubble shooter | Pang-style gameplay | Planned |
-| Space shooter | Space Invaders-style gameplay | Planned |
-| Brick breaker | Breakout-style gameplay | Planned |
-
-All minigames will use original implementations and assets.
+- Unlockable rooms and additional minigames.
+- Optional cosmetic customization and monetization.
 
 ## Technology stack
 
@@ -52,20 +93,18 @@ All minigames will use original implementations and assets.
 src/
 ├── client/
 │   ├── Controllers/
-│   └── UI/
+│   ├── UI/
+│   └── Minigames/
+│       └── BrickBreaker/
 ├── server/
-│   ├── Data/
-│   ├── Services/
-│   └── Systems/
 └── shared/
-    ├── Config/
-    ├── Modules/
-    └── Types/
 
 assets/
 docs/
 tests/
 ```
+
+The project structure is organized to separate client-side, server-side and shared functionality. Individual minigames maintain their own modules and logic.
 
 ## Development setup
 
@@ -88,7 +127,7 @@ rojo build default.project.json --output build-test.rbxlx
 ### Synchronize with Roblox Studio
 
 1. Open Roblox Studio.
-2. Open a development experience.
+2. Open the Universo Arcade development experience.
 3. Start the Rojo plugin.
 4. Start the Rojo server from the project terminal:
 
@@ -112,12 +151,25 @@ rojo serve
 - Clear separation between client, server and shared code.
 - Version-controlled development.
 - Incremental testing and documentation.
+- Fair competition without pay-to-win mechanics.
+- Persistent player progression.
 
 ## Project status
 
-Universo Arcade is currently in its initial setup and architecture phase.
+Universo Arcade is in active development.
 
-The first milestone is **Version 0.1: one playable arcade machine, one minigame, scoring and persistent personal records**.
+The main arcade environment has been built, and BrickBreaker has reached an advanced stage of implementation.
+
+The current priorities are:
+
+1. Consolidate the project structure and documentation.
+2. Complete and stabilize BrickBreaker.
+3. Implement persistent personal high scores.
+4. Develop the shared arcade machine and session systems.
+5. Integrate BrickBreaker into the general arcade experience.
+6. Expand the project with the remaining minigames.
+
+The first playable milestone aims to deliver one fully integrated arcade machine, one complete minigame, scoring and persistent personal records.
 
 ---
 

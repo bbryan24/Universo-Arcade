@@ -7,7 +7,7 @@
 | Plataforma | Roblox |
 | Público objetivo | Jugadores de Roblox interesados en experiencias arcade y competición casual |
 | Estado | En desarrollo |
-| Versión del documento | 0.2 |
+| Versión del documento | 0.3 |
 | Versión objetivo inicial | 0.1 |
 | Última actualización | Noviembre de 2026 |
 | Idioma base | Inglés |
@@ -51,7 +51,7 @@ La dirección artística combina elementos retro y futuristas: geometría sencil
 
 El entorno deberá transmitir una sensación acogedora, divertida y ligeramente nostálgica.
 
-La iluminación y la arquitectura del salón principal ya cuentan con una primera implementación aprobada. Las siguientes tareas visuales se centrarán en los detalles decorativos pendientes y en las futuras zonas del edificio.
+La arquitectura y la iluminación del salón principal ya cuentan con una primera implementación aprobada. Las siguientes tareas visuales se centrarán en los detalles decorativos pendientes y en las futuras zonas del edificio.
 
 ## 2.2. Elementos visuales
 
@@ -91,7 +91,7 @@ El salón principal dispone de una primera construcción completa de su arquitec
 
 La arquitectura y la iluminación están aprobadas. Los pósteres están implementados, pero su posición todavía necesita ajustes para que queden dentro de las salas y no sobre los marcos de las puertas.
 
-La decoración secundaria no debe impedir que se avance en los sistemas jugables. La prioridad actual pasa a ser la funcionalidad de las máquinas.
+La decoración secundaria no debe impedir que se avance en los sistemas jugables. La prioridad actual se centra en completar y estabilizar la funcionalidad de las máquinas.
 
 ---
 
@@ -113,7 +113,7 @@ La experiencia básica del jugador seguirá este recorrido:
 10. Se actualiza el récord personal si corresponde.
 11. El jugador regresa a la exploración del salón.
 
-Este flujo representa el objetivo funcional del juego. Todavía debe implementarse el sistema general de interacción, reserva y sesiones de las máquinas.
+Este flujo representa el objetivo funcional del juego. Todavía debe completarse el sistema general de interacción, reserva y sesiones de las máquinas.
 
 ## 3.2. Interacción con las máquinas
 
@@ -170,20 +170,23 @@ Características previstas:
 - Incremento progresivo de dificultad.
 - Sistema de puntuación.
 
-Será el primer minijuego que se desarrollará como experiencia funcional completa.
+Será uno de los minijuegos principales de Universo Arcade. Su desarrollo funcional completo se abordará progresivamente.
 
 ### 4.2.2. Bubble Shooter
 
-Inspiración: juegos arcade clásicos de disparo y división de burbujas, como Pang.
+Inspiración: juegos clásicos de lanzamiento y agrupación de burbujas, como Puzzle Bobble.
 
 Características previstas:
 
-- Personaje o dispositivo de disparo.
-- Burbujas con diferentes comportamientos.
-- División de burbujas al recibir impactos.
-- Obstáculos y elementos de escenario.
+- Lanzador de burbujas controlado por el jugador.
+- Burbujas de diferentes colores.
+- Formación de grupos de burbujas del mismo color.
+- Eliminación de grupos al alcanzar las combinaciones necesarias.
+- Rebotes contra los límites del escenario.
 - Sistema de puntuación.
 - Dificultad progresiva.
+
+La experiencia estará orientada a la precisión, la planificación de disparos y la creación de combinaciones de colores.
 
 ### 4.2.3. Space Shooter
 
@@ -198,18 +201,37 @@ Características previstas:
 - Sistema de puntuación.
 - Dificultad creciente.
 
+Su diseño tendrá identidad propia, tomando como referencia general los juegos clásicos de invasión espacial.
+
 ### 4.2.4. Brick Breaker
 
 Inspiración: los juegos clásicos de destrucción de bloques.
 
-Características previstas:
+Características implementadas y previstas:
 
 - Plataforma controlada por el jugador.
 - Pelota con movimiento y rebotes.
 - Bloques destructibles.
 - Diferentes configuraciones de niveles.
-- Sistema de puntuación.
+- Sistema de puntuación y vidas.
 - Progresión de dificultad.
+- Potenciadores temporales con diferentes efectos.
+- Transiciones automáticas entre niveles.
+- Pantalla inicial PRESS START.
+- Pantalla de pausa con opciones para continuar o abandonar.
+- Confirmación antes de abandonar una partida.
+- Pantalla GAME OVER a pantalla completa.
+- Visualización de la puntuación final y el récord.
+- Reinicio de partida mediante teclado o ratón.
+- Preparación de la pelota sobre la plataforma antes de cada lanzamiento.
+
+El funcionamiento de la partida sigue un flujo arcade: el jugador inicia la experiencia, prepara el lanzamiento y juega hasta completar los niveles o quedarse sin vidas.
+
+Los controles permiten seleccionar entre teclado y ratón. Durante la partida se respeta el método de control elegido, mientras que las acciones de inicio y reinicio admiten las entradas previstas por la interfaz.
+
+El juego incorpora potenciadores temporales que modifican determinadas características de la partida, así como recompensas y límites específicos para evitar acumulaciones no deseadas.
+
+El almacenamiento permanente de récords personales queda pendiente de implementación.
 
 Los nombres anteriores describen las inspiraciones jugables. Las implementaciones, diseños, gráficos y niveles serán originales.
 
@@ -228,7 +250,9 @@ Se buscará reutilizar los siguientes elementos:
 
 Cada minijuego conservará su propia lógica y estado.
 
-La implementación comenzará con Block Puzzle. La arquitectura se ajustará a partir de las necesidades reales de esa primera experiencia antes de extenderla a los demás minijuegos.
+El desarrollo se realizará de manera incremental, priorizando inicialmente Brick Breaker como primera experiencia jugable avanzada.
+
+La arquitectura se irá consolidando a partir de las necesidades reales de los minijuegos, procurando mantener separados sus sistemas internos y reutilizar los componentes comunes cuando resulte conveniente.
 
 ---
 
@@ -273,6 +297,8 @@ El sistema deberá contemplar situaciones como:
 
 Las sesiones deberán finalizar correctamente y liberar los recursos asociados.
 
+La salida voluntaria de una partida deberá distinguirse de su finalización normal. El sistema de puntuaciones tendrá que evitar que se pierdan resultados válidos o se registren resultados incompletos.
+
 ---
 
 # 6. Puntuaciones y progresión
@@ -290,6 +316,10 @@ No se confiará directamente en las puntuaciones comunicadas por el cliente.
 Desde la primera versión se pretende almacenar el mejor resultado individual de cada jugador para cada minijuego.
 
 El récord deberá mantenerse aunque el jugador abandone la experiencia y vuelva en otro momento.
+
+En Brick Breaker ya existe una interfaz preparada para mostrar la puntuación final y el récord. Sin embargo, el almacenamiento persistente de esos resultados todavía está pendiente de implementación.
+
+El sistema definitivo deberá guardar los récords de forma segura y permitir recuperarlos cuando el jugador vuelva a entrar en la experiencia.
 
 ## 6.3. Clasificaciones futuras
 
@@ -353,11 +383,32 @@ La interfaz deberá ser clara, intuitiva y coherente con la estética arcade.
 
 Se evitarán elementos innecesarios que dificulten la visibilidad del minijuego.
 
+Las interfaces de las máquinas deberán mantener una identidad visual coherente con el salón recreativo y con la experiencia concreta que ofrezca cada minijuego.
+
+En Brick Breaker se utiliza una estética inspirada en las recreativas clásicas, con tipografía arcade, pantallas de transición y mensajes directos.
+
 ## 8.3. Cámara
 
 La experiencia utilizará una transición entre la exploración del salón y la utilización de las máquinas.
 
 Se estudiará un sistema de cámara que permita acercarse a la máquina y centrar la atención en el minijuego.
+
+## 8.4. Inicio, pausa y finalización de partida
+
+Las máquinas deberán disponer de interfaces que permitan al jugador comprender el estado de su partida.
+
+En Brick Breaker se contemplan los siguientes estados:
+
+- **PRESS START:** pantalla inicial que permite comenzar la experiencia.
+- **Gameplay:** pantalla principal durante la partida.
+- **Pause:** interfaz de pausa con opciones para continuar o abandonar.
+- **Exit Confirmation:** confirmación antes de salir de la partida.
+- **Level Transition:** transición automática que informa de la finalización de un nivel y del comienzo del siguiente.
+- **GAME OVER:** pantalla final que muestra la puntuación y el récord, y permite reiniciar la partida.
+
+Las transiciones entre niveles no requieren una confirmación manual. El cambio se realiza automáticamente después de mostrar los mensajes correspondientes.
+
+La pantalla GAME OVER utiliza un fondo negro a pantalla completa, sin paneles ni botones de acción. El jugador puede reiniciar mediante teclado o ratón.
 
 ---
 
@@ -401,7 +452,7 @@ Universo Arcade se desarrollará de manera incremental.
 |---|---|
 | 0.1 | Primera máquina, primer minijuego, puntuación y récord personal persistente. |
 | 0.2 | Mejoras de jugabilidad, interfaz y estabilidad. |
-| 0.3 | Incorporación de nuevos minijuegos. |
+| 0.3 | Consolidación del primer minijuego funcional y preparación para incorporar nuevos minijuegos. |
 | 0.4 | Ampliación del salón recreativo y experiencia social. |
 | 0.5 | Primera implementación de economía y recompensas. |
 | 0.6 | Clasificaciones entre amigos. |
@@ -442,6 +493,7 @@ El proyecto seguirá los siguientes principios:
 - Evitar dependencias innecesarias.
 - Diseñar pensando en futuras ampliaciones.
 - Priorizar la funcionalidad jugable frente a la decoración secundaria.
+- Evitar modificaciones innecesarias en sistemas que ya hayan sido probados y aprobados.
 
 ---
 
@@ -469,7 +521,7 @@ El proyecto dispone de un entorno de desarrollo basado en Roblox Studio, VS Code
 
 El salón principal ya cuenta con una primera implementación física y visual.
 
-### Elementos construidos
+## 14.1. Elementos construidos
 
 - Salón principal de 120 × 100 studs.
 - Cuatro salas temáticas.
@@ -487,7 +539,7 @@ El salón principal ya cuenta con una primera implementación física y visual.
 - Punto de aparición configurado para evitar que el jugador aparezca fuera del mapa.
 - Eliminación o corrección de elementos predeterminados que interferían con el escenario.
 
-### Elementos aprobados
+## 14.2. Elementos aprobados
 
 - Distribución general del salón.
 - Geometría principal.
@@ -497,24 +549,60 @@ El salón principal ya cuenta con una primera implementación física y visual.
 - Iluminación.
 - Patrones geométricos de paredes.
 
-### Elementos pendientes de ajuste visual
+## 14.3. Elementos pendientes de ajuste visual
 
 - Recolocar los pósteres para que queden dentro de las salas y no sobre los marcos de las puertas.
 - Completar detalles decorativos secundarios cuando no interfieran con el desarrollo de las máquinas.
 
-### Estado jugable
+## 14.4. Estado de los sistemas jugables
 
-Las máquinas están colocadas físicamente, pero todavía está pendiente implementar su funcionalidad:
+Las máquinas están colocadas físicamente, pero todavía está pendiente completar su funcionalidad general:
 
 - Interacción.
 - Disponibilidad y reserva.
 - Sesiones individuales.
-- Interfaz de juego.
-- Integración del primer minijuego.
-- Puntuaciones.
+- Integración general de los minijuegos.
+- Validación de puntuaciones.
 - Récords personales y persistencia.
 
-La siguiente prioridad es desarrollar el sistema común de máquinas y conseguir una primera partida completa de Block Puzzle.
+## 14.5. Estado de los minijuegos
+
+**Brick Breaker**
+
+Es actualmente el minijuego con mayor grado de desarrollo.
+
+Dispone de una implementación funcional que incluye:
+
+- Tablero de juego.
+- Bloques destructibles.
+- Movimiento de la plataforma mediante teclado o ratón.
+- Lanzamiento de la pelota.
+- Sistema de vidas y puntuación.
+- Potenciadores y efectos temporales.
+- Progresión entre niveles.
+- Pantalla inicial PRESS START.
+- Sistema de pausa y confirmación de salida.
+- Transiciones automáticas entre niveles.
+- Pantalla GAME OVER a pantalla completa.
+- Visualización de puntuación final y récord.
+- Reinicio mediante ESPACIO o clic.
+- Preparación de la pelota sobre la plataforma antes de un nuevo lanzamiento.
+
+Las mecánicas de los potenciadores contemplan duraciones, límites y recompensas específicas para evitar acumulaciones no deseadas.
+
+La jugabilidad y las principales interfaces están siendo probadas y ajustadas.
+
+Quedan pendientes, entre otras tareas, el almacenamiento permanente de récords, las pruebas de estabilidad y la integración definitiva con los sistemas generales de máquinas y sesiones.
+
+**Block Puzzle, Bubble Shooter y Space Shooter**
+
+Todavía están pendientes de desarrollo como minijuegos funcionales completos.
+
+## 14.6. Prioridad actual de desarrollo
+
+La prioridad actual es completar y estabilizar Brick Breaker, implementar el almacenamiento permanente de récords personales y consolidar los sistemas comunes necesarios para incorporar progresivamente los demás minijuegos.
+
+La decoración secundaria del salón continuará desarrollándose sin desplazar las tareas fundamentales de jugabilidad.
 
 ---
 
@@ -622,3 +710,4 @@ La monetización nunca deberá perjudicar artificialmente el ritmo de progresió
 |---|---|---|
 | 0.1 | Inicial | Visión, diseño y alcance inicial del proyecto. |
 | 0.2 | Noviembre de 2026 | Actualización del estado real del salón, dirección artística, dimensiones, máquinas colocadas y prioridad de desarrollo jugable. |
+| 0.3 | Noviembre de 2026 | Actualización del estado de desarrollo de Brick Breaker, sus mecánicas, controles e interfaces. Corrección de la referencia artística de Bubble Shooter y actualización de las prioridades de desarrollo.

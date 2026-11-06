@@ -4,8 +4,9 @@
 |---|---|
 | Proyecto | Universo Arcade |
 | Documento | Arquitectura técnica |
-| Versión del documento | 0.2 |
-| Estado | Arquitectura inicial definida; sistemas jugables pendientes |
+| Versión del documento | 0.3 |
+| Fecha | Noviembre de 2026 |
+| Estado | Arquitectura inicial definida; BrickBreaker en desarrollo avanzado |
 | Lenguaje principal | Luau |
 | Motor | Roblox |
 | Sincronización | Rojo 7.7.1 |
@@ -88,6 +89,8 @@ Responsabilidades:
 
 El cliente no tendrá autoridad sobre las puntuaciones finales, las reservas de máquinas ni los datos persistentes.
 
+En la implementación actual de BrickBreaker, la lógica de juego y su representación se ejecutan principalmente en el cliente. Su integración con una futura validación autoritativa del servidor queda pendiente.
+
 ### Servidor
 
 Se ejecutará en Roblox y será responsable de la lógica importante del juego.
@@ -143,7 +146,16 @@ Universo Arcade/
 │
 ├── src/
 │   ├── client/
-│   │   └── ...
+│   │   ├── Controllers/
+│   │   │   └── MachineClientController.client.luau
+│   │   │
+│   │   ├── UI/
+│   │   │   └── MachineInterface.luau
+│   │   │
+│   │   └── Minigames/
+│   │       └── BrickBreaker/
+│   │           ├── BrickBreakerController.luau
+│   │           └── BrickBreakerInput.luau
 │   │
 │   ├── server/
 │   │   ├── Main.server.luau
@@ -166,35 +178,60 @@ Universo Arcade/
 
 Esta estructura refleja los componentes conocidos del proyecto. Se ampliará a medida que se implementen los sistemas jugables.
 
+La estructura de los módulos de BrickBreaker podrá evolucionar conforme se incorporen nuevas responsabilidades, evitando duplicar módulos o introducir dependencias innecesarias.
+
 ## 3.1. Client
 
 Contendrá los controladores responsables de coordinar las funcionalidades del cliente.
-
-Se prevé organizarlo en:
 
 ### Controllers
 
 Responsables de coordinar las funcionalidades del jugador.
 
-Módulos previstos:
+Controlador implementado actualmente:
 
-- `ArcadeInteractionController`
-- `CameraController`
-- `MinigameController`
-- `InputController`
+- `MachineClientController.client.luau`: coordina la interacción del cliente con la interfaz y la experiencia de las máquinas.
+
+Se contemplan otros controladores para futuras funcionalidades, como la interacción general con máquinas y la gestión de cámaras.
 
 ### UI
 
 Contendrá los componentes y pantallas de interfaz.
 
-Elementos previstos:
+Elemento implementado actualmente:
 
-- `ArcadeHUD`
-- `MinigameUI`
-- `ScoreUI`
-- `ResultsUI`
+- `MachineInterface.luau`: gestiona la interfaz de la experiencia de las máquinas, incluyendo las pantallas utilizadas por BrickBreaker.
 
-Esta organización se concretará cuando comience la implementación de la interfaz.
+La interfaz de BrickBreaker contempla:
+
+- Pantalla inicial `PRESS START`.
+- Interfaz de juego.
+- Información de puntuación y vidas.
+- Menú de pausa.
+- Confirmación de salida.
+- Transiciones entre niveles.
+- Pantalla `GAME OVER`.
+- Puntuación final y récord mostrado.
+- Reinicio de la partida.
+
+La organización podrá ampliarse con componentes específicos cuando aparezcan necesidades reales.
+
+### Minigames
+
+Contendrá los módulos propios de cada minijuego.
+
+Minijuego con implementación avanzada:
+
+- `BrickBreaker`: contiene la lógica de juego, la gestión de controles y los elementos necesarios para ejecutar la experiencia en el cliente.
+
+Módulos actuales:
+
+- `BrickBreakerController.luau`: coordina la lógica y el estado de la partida.
+- `BrickBreakerInput.luau`: gestiona los controles del jugador.
+
+Se podrán incorporar módulos adicionales, como los encargados de representar el tablero o gestionar elementos concretos, respetando los módulos que ya existan en el proyecto.
+
+Los demás minijuegos se incorporarán progresivamente cuando comience su desarrollo.
 
 ## 3.2. Server
 
@@ -254,7 +291,7 @@ Elementos previstos:
 
 ## 3.3. Shared
 
-Contendrá módulos que puedan utilizar tanto cliente como servidor.
+Contendrá módulos que puedan utilizar tanto el cliente como el servidor.
 
 ### Config
 
@@ -416,6 +453,8 @@ Los sistemas generales no deberán conocer los detalles internos de las mecánic
 
 La comunicación se realizará mediante contratos comunes definidos por la arquitectura.
 
+BrickBreaker constituye actualmente la primera implementación avanzada de un minijuego. Su desarrollo permite probar la organización de módulos, la gestión de controles, las pantallas y el ciclo de una partida antes de completar el sistema general de máquinas y sesiones.
+
 ## 6.2. Registro de minijuegos
 
 Se utilizará un registro central que permita identificar los minijuegos disponibles.
@@ -446,6 +485,8 @@ Todos los minijuegos deberán seguir un ciclo de vida común:
 
 La implementación interna podrá variar, pero deberá respetar las responsabilidades y transiciones generales.
 
+BrickBreaker ya dispone de una gestión propia de inicio, pausa, continuación de nivel, finalización y reinicio. Esta gestión todavía no equivale a la integración con un ciclo de vida común administrado por el servidor.
+
 ## 6.4. Separación de lógica y presentación
 
 La lógica del minijuego y su representación visual estarán separadas.
@@ -454,7 +495,9 @@ El cliente se encargará de presentar la experiencia y recoger los controles.
 
 El servidor será responsable de validar las acciones y determinar los resultados.
 
-Para el primer minijuego se estudiará una simulación autoritativa en servidor, manteniendo la interfaz y representación gráfica en cliente.
+En BrickBreaker, la lógica de la partida y su representación se ejecutan actualmente en el cliente. Esto permite desarrollar y probar sus mecánicas y su interfaz, pero no constituye todavía una simulación autoritativa en servidor.
+
+La integración futura deberá estudiar cómo validar las acciones y resultados desde el servidor, evitando confiar directamente en las puntuaciones comunicadas por el cliente.
 
 La estrategia podrá adaptarse a cada minijuego siempre que se mantenga una validación segura de resultados.
 
@@ -577,7 +620,9 @@ Se conservará el mejor resultado válido.
 
 La actualización de un récord no deberá sustituir un resultado superior por otro inferior.
 
-El sistema de puntuaciones todavía está pendiente de implementación.
+BrickBreaker muestra actualmente la puntuación final y un campo destinado al récord en su pantalla de `GAME OVER`. Sin embargo, el almacenamiento persistente y la actualización segura de récords todavía no están implementados.
+
+El sistema general de puntuaciones continúa pendiente de implementación.
 
 ---
 
@@ -871,9 +916,11 @@ Cada decisión importante deberá documentarse cuando se tome.
 
 # 17. Estado actual de la arquitectura
 
-La arquitectura del proyecto se encuentra en una fase inicial de implementación.
+La arquitectura del proyecto se encuentra en una fase de implementación incremental. Los sistemas de construcción del salón están implementados y BrickBreaker constituye actualmente el minijuego con mayor desarrollo funcional.
 
 ## 17.1. Implementado
+
+**Estructura e infraestructura**
 
 - [x] Estructura básica de cliente, servidor y código compartido.
 - [x] Configuración de Rojo.
@@ -887,18 +934,40 @@ La arquitectura del proyecto se encuentra en una fase inicial de implementación
 - [x] Punto de aparición propio.
 - [x] Configuración centralizada de las dimensiones principales del mapa.
 
+**BrickBreaker — implementación avanzada en cliente**
+
+- [x] Controlador principal del minijuego.
+- [x] Módulo de gestión de controles.
+- [x] Movimiento de la pala mediante teclado y ratón.
+- [x] Inicio de partida mediante teclado o clic.
+- [x] Pantalla inicial `PRESS START`.
+- [x] Gestión de puntuación y vidas durante la partida.
+- [x] Gestión de niveles y transición entre niveles.
+- [x] Sistema de pausa.
+- [x] Menú de pausa con opción de reanudar.
+- [x] Confirmación de salida de la partida.
+- [x] Pantalla `GAME OVER`.
+- [x] Visualización de la puntuación final.
+- [x] Visualización del campo destinado al récord.
+- [x] Reinicio de la partida mediante teclado o clic.
+- [x] Preparación de la bola sobre la pala después del reinicio.
+
+La implementación de BrickBreaker continúa evolucionando. Su lógica actual se ejecuta principalmente en el cliente y todavía no está integrada con un sistema general de sesiones, puntuaciones autoritativas y persistencia en servidor.
+
 ## 17.2. Diseñado, pero pendiente de implementación
 
-- [ ] Registro de máquinas.
-- [ ] Sistema de interacción.
+- [ ] Registro general de máquinas.
+- [ ] Sistema de interacción con máquinas.
 - [ ] Gestión de disponibilidad.
 - [ ] Reservas de máquinas.
-- [ ] Sistema de sesiones.
-- [ ] Ciclo de vida de los minijuegos.
-- [ ] Comunicación de partidas.
-- [ ] Sistema de puntuaciones.
-- [ ] Persistencia de datos.
-- [ ] Gestión de récords.
+- [ ] Sistema general de sesiones.
+- [ ] Ciclo de vida común de los minijuegos.
+- [ ] Comunicación general de partidas entre cliente y servidor.
+- [ ] Validación autoritativa de resultados.
+- [ ] Sistema general de puntuaciones.
+- [ ] Persistencia de datos mediante `DataStoreService`.
+- [ ] Guardado y actualización de récords.
+- [ ] Integración de BrickBreaker con los sistemas generales.
 
 ## 17.3. Planificado para versiones posteriores
 
@@ -909,10 +978,13 @@ La arquitectura del proyecto se encuentra en una fase inicial de implementación
 - [ ] Clasificaciones.
 - [ ] Monetización opcional.
 - [ ] Personalización cosmética.
+- [ ] Desarrollo de Block Puzzle.
+- [ ] Desarrollo de Bubble Shooter.
+- [ ] Desarrollo de Space Shooter.
 
 ## 17.4. Próximo objetivo técnico
 
-El siguiente objetivo será implementar el sistema común de máquinas arcade.
+El siguiente objetivo arquitectónico será implementar el sistema común de máquinas arcade.
 
 El orden de trabajo previsto es:
 
@@ -922,10 +994,23 @@ El orden de trabajo previsto es:
 4. Implementar la interacción entre jugador y máquina.
 5. Implementar la disponibilidad y las reservas.
 6. Crear el sistema de sesiones.
-7. Integrar el primer minijuego.
-8. Reutilizar la arquitectura para los demás minijuegos.
+7. Definir la integración de los minijuegos con el sistema común.
+8. Integrar progresivamente los minijuegos existentes.
+9. Incorporar la validación de resultados y la persistencia de puntuaciones.
 
 La implementación deberá realizarse de forma incremental, probando cada sistema antes de continuar con el siguiente.
+
+BrickBreaker podrá seguir evolucionando en paralelo, sin que ello implique adelantar la implementación de sistemas generales que todavía no estén preparados.
+
+---
+
+# 18. Historial del documento
+
+| Versión | Fecha | Cambios |
+|---|---|---|
+| 0.1 | Inicial | Primera definición de la arquitectura técnica del proyecto. |
+| 0.2 | Noviembre de 2026 | Actualización de la estructura del proyecto y de los servicios de construcción del salón. |
+| 0.3 | Noviembre de 2026 | Incorporación del estado real de BrickBreaker, sus módulos de cliente, interfaz y funcionalidades implementadas. Actualización de los sistemas pendientes y de los objetivos técnicos. |
 
 ---
 
