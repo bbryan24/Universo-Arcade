@@ -62,6 +62,7 @@ type BrickBreakerCallbacks = {
     onStatsChanged: ((data: BrickBreakerStats) -> ())?,
     onLevelCompleted: ((completedLevel: number, nextLevel: number) -> ())?,
     onGameOver: ((data: BrickBreakerStats) -> ())?,
+    onRestart: (() -> ())?,
 }
 
 local callbacks: BrickBreakerCallbacks = {}
@@ -1694,9 +1695,29 @@ end
 
 local function launchBall()
 
-        if isPaused or isTransitioning or gameOver then
-        return
-    end
+        if isPaused or isTransitioning then
+            return
+        end
+
+        -- SI ESTAMOS EN GAME OVER,
+        -- REINICIAR LA PARTIDA CON ESTA PULSACIÓN.
+
+        if gameOver then
+
+            resetGame()
+
+            gameOver = false
+            gameStarted = false
+
+            if callbacks.onRestart then
+                callbacks.onRestart()
+            end
+
+            setStatus("PULSA ESPACIO O HAZ CLIC PARA JUGAR")
+
+            return
+
+        end
 
     -- SI LA PARTIDA YA ESTÁ EN MARCHA,
     -- LIBERAR LAS PELOTAS ATRAPADAS POR EL IMÁN.
@@ -2064,61 +2085,52 @@ end
 -- PERDER UNA VIDA
 --==================================================
 
-local function loseLife()
+    local function loseLife()
 
-    lives -= 1
+        lives -= 1
 
-    updateHUD()
+        updateHUD()
 
-    if lives <= 0 then
+        if lives <= 0 then
 
-        gameStarted = false
-        gameOver = true
-        isTransitioning = false
+            gameStarted = false
+            gameOver = true
+            isTransitioning = false
 
-        ballVelocity = Vector2.zero
+            ballVelocity = Vector2.zero
 
-        -- DETENER LOS CONTROLES AL TERMINAR LA PARTIDA.
 
-        if inputStarted then
+            paddleWideUntil = 0
+            slowBallUntil = 0
+            shieldUntil = 0
+            fireballUntil = 0
+            magnetUntil = 0
 
-            BrickBreakerInput.Stop()
+            clearFallingPowerUps()
 
-            inputStarted = false
+            updatePowerUpVisuals()
 
-        end
+            setStatus("GAME OVER")
 
-        paddleWideUntil = 0
-        slowBallUntil = 0
-        shieldUntil = 0
-        fireballUntil = 0
-        magnetUntil = 0
+            if callbacks.onGameOver then
 
-        clearFallingPowerUps()
+                callbacks.onGameOver({
+                    Score = score,
+                    Lives = lives,
+                    Level = level,
+                })
 
-        updatePowerUpVisuals()
+            end
 
-        setStatus("GAME OVER")
-
-        if callbacks.onGameOver then
-
-            callbacks.onGameOver({
-                Score = score,
-                Lives = lives,
-                Level = level,
-            })
+            return
 
         end
 
-        return
+        resetBall()
+
+        setStatus("HAS PERDIDO UNA VIDA")
 
     end
-
-    resetBall()
-
-    setStatus("HAS PERDIDO UNA VIDA")
-
-end
 
 --==================================================
 -- ACTUALIZAR PELOTAS
@@ -3116,7 +3128,10 @@ function BrickBreakerController.Start(
     BrickBreakerInput.Start(
         board,
         boardElements.Paddle,
-        launchBall
+        launchBall,
+        function()
+            return gameOver
+        end
     )
 
     BrickBreakerInput.SetMode(activeMode)

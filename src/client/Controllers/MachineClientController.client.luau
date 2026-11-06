@@ -310,7 +310,19 @@ local function startActiveMinigame(minigameId)
 
         end,
 
-    }
+        -- REINICIAR PARTIDA DESDE GAME OVER.
+
+        onRestart = function()
+
+            if not sessionActive or not activeInterface then
+                return
+            end
+
+            activeInterface.ShowGameplay()
+
+        end,
+
+        }
 
     -- INICIAR CONTROLADOR
 

@@ -911,68 +911,106 @@ function MachineInterface.Create(
         "LevelTransition"
     )
 
-    local levelPanel = createViewPanel(
-        levelView,
-        "NIVEL COMPLETADO",
-        "PREPARANDO SIGUIENTE NIVEL..."
+    -- TEXTOS DE LA TRANSICIÓN
+
+levelView.BackgroundTransparency = 0
+
+local levelTitle = createLabel(
+    levelView,
+    "LevelCompleteTitle",
+    "LEVEL COMPLETE",
+    UDim2.fromScale(0.9, 0.25),
+    UDim2.fromScale(0.05, 0.32),
+    42,
+    theme.Primary,
+    Enum.Font.Arcade
+)
+
+levelTitle.ZIndex = 21
+
+local levelMessage = createLabel(
+    levelView,
+    "NextLevelTitle",
+    "LEVEL 2",
+    UDim2.fromScale(0.9, 0.25),
+    UDim2.fromScale(0.05, 0.42),
+    38,
+    COLORS.White,
+    Enum.Font.Arcade
+)
+
+levelMessage.ZIndex = 21
+
+levelMessage.Visible = false
+
+       -- GAME OVER
+
+    local gameOverView = createView(
+        "GameOverView",
+        "GameOver"
     )
 
-    local levelTitle = levelPanel:FindFirstChild("ViewTitle")
-    local levelMessage = levelPanel:FindFirstChild("ViewMessage")
+    gameOverView.BackgroundTransparency = 0
 
-    local continueButton = nil
+    -- TÍTULO PRINCIPAL
 
-    -- GAME OVER
-
-    local gameOverView = createView("GameOverView", "GameOver")
-
-    local gameOverPanel = createViewPanel(
+    local gameOverTitle = createLabel(
         gameOverView,
+        "GameOverTitle",
         "GAME OVER",
-        "FIN DE LA PARTIDA"
+        UDim2.fromScale(0.9, 0.25),
+        UDim2.fromScale(0.05, 0.25),
+        42,
+        theme.Primary,
+        Enum.Font.Arcade
     )
+
+    gameOverTitle.ZIndex = 21
+
+    -- PUNTUACIÓN FINAL
 
     local finalScoreLabel = createLabel(
-        gameOverPanel,
+        gameOverView,
         "FinalScore",
         "PUNTUACIÓN: 0",
-        UDim2.fromScale(0.9, 0.12),
-        UDim2.fromScale(0.05, 0.58),
-        17,
-        COLORS.White
+        UDim2.fromScale(0.9, 0.10),
+        UDim2.fromScale(0.05, 0.48),
+        18,
+        COLORS.White,
+        Enum.Font.Arcade
     )
 
-    finalScoreLabel.ZIndex = 22
+    finalScoreLabel.ZIndex = 21
+
+    -- RÉCORD
 
     local finalBestLabel = createLabel(
-        gameOverPanel,
+        gameOverView,
         "FinalBest",
         "RÉCORD: --",
         UDim2.fromScale(0.9, 0.10),
-        UDim2.fromScale(0.05, 0.70),
-        14,
-        theme.Primary
+        UDim2.fromScale(0.05, 0.59),
+        16,
+        theme.Primary,
+        Enum.Font.Arcade
     )
 
-    finalBestLabel.ZIndex = 22
+    finalBestLabel.ZIndex = 21
 
-    createViewButton(
-        gameOverPanel,
-        "GameOverExitButton",
-        "VOLVER AL SALÓN",
-        UDim2.fromScale(0.5, 0.88),
-        function()
+    -- MENSAJE PARA REINICIAR
 
-            if currentView ~= "GameOver" then
-                return
-            end
-
-            if onExit then
-                onExit()
-            end
-
-        end
+    local gameOverContinueLabel = createLabel(
+        gameOverView,
+        "GameOverContinue",
+        "PULSA PARA VOLVER A JUGAR",
+        UDim2.fromScale(0.9, 0.10),
+        UDim2.fromScale(0.05, 0.82),
+        11,
+        COLORS.White,
+        Enum.Font.Arcade
     )
+
+    gameOverContinueLabel.ZIndex = 21
 
     -- CONFIRMACIÓN DE SALIDA
 
@@ -1186,48 +1224,58 @@ createViewButton(
     end
 
     function interface.ShowLevelTransition(
-        completedLevel,
-        nextLevel,
-        onContinue
-    )
+            completedLevel,
+            nextLevel,
+            onContinue
+        )
 
-        if currentView == "ExitConfirmation" then
-            return
-        end
+            if currentView == "ExitConfirmation" then
+                return
+            end
 
-        levelTitle.Text =
-            "NIVEL " .. tostring(completedLevel) .. " COMPLETADO"
+            -- Primera pantalla: LEVEL COMPLETE
+            levelTitle.Text = "LEVEL COMPLETE"
+            levelTitle.Visible = true
+            levelMessage.Visible = false
 
-        levelMessage.Text =
-            "¡BUEN TRABAJO!\n\nPREPÁRATE PARA EL NIVEL "
-            .. tostring(nextLevel)
+            showView("LevelTransition")
 
-        if continueButton then
-            continueButton:Destroy()
-            continueButton = nil
-        end
+            task.spawn(function()
 
-        continueButton = createViewButton(
-            levelPanel,
-            "ContinueLevelButton",
-            "CONTINUAR",
-            UDim2.fromScale(0.5, 0.82),
-            function()
+                -- Mantener LEVEL COMPLETE durante 2 segundos
+                task.wait(2)
 
                 if currentView ~= "LevelTransition" then
                     return
                 end
 
+                -- Dejar la pantalla negra durante medio segundo
+                levelTitle.Visible = false
+
+                task.wait(0.5)
+
+                if currentView ~= "LevelTransition" then
+                    return
+                end
+
+                -- Mostrar el siguiente nivel
+                levelMessage.Text = "LEVEL " .. tostring(nextLevel)
+                levelMessage.Visible = true
+
+                task.wait(2)
+
+                if currentView ~= "LevelTransition" then
+                    return
+                end
+
+                -- Entrar automáticamente en el siguiente nivel
                 showView("Gameplay")
 
                 if onContinue then
-                    onContinue()
-                end
-
+                onContinue()
             end
-        )
 
-        showView("LevelTransition")
+        end)
 
     end
 

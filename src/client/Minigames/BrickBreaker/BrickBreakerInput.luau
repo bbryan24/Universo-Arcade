@@ -23,6 +23,7 @@ local rightPressed = false
 local board = nil
 local paddle = nil
 local onLaunch = nil
+local isGameOverCallback = nil
 
 local inputConnections = {}
 local renderConnection = nil
@@ -87,18 +88,16 @@ local function updatePaddlePosition(deltaTime)
         paddlePosition +=
             direction * (paddleSpeed / boardWidth) * deltaTime
 
-    elseif activeMode == "Mouse" then
+                elseif activeMode == "Mouse" then
 
-        -- La pala sigue siempre el eje X del ratón.
-        -- Si el ratón sale del tablero, la posición se limita
-        -- automáticamente a los extremos.
+                -- La pala sigue la posición horizontal del ratón.
 
-        local mousePosition = getMousePosition()
-        local boardPosition = board.AbsolutePosition
+                local mousePosition = getMousePosition()
+                local boardPosition = board.AbsolutePosition
 
-        paddlePosition =
-            (mousePosition.X - boardPosition.X) / boardWidth
-    end
+                paddlePosition =
+                    (mousePosition.X - boardPosition.X) / boardWidth
+            end
 
     paddlePosition = math.clamp(
         paddlePosition,
@@ -135,19 +134,59 @@ function BrickBreakerInput.GetMode()
     return activeMode
 end
 
-function BrickBreakerInput.Start(boardFrame, paddleFrame, launchCallback)
+    function BrickBreakerInput.Start(boardFrame, paddleFrame, launchCallback, gameOverCallback)
 
-    BrickBreakerInput.Stop()
+        BrickBreakerInput.Stop()
 
-    board = boardFrame
-    paddle = paddleFrame
-    onLaunch = launchCallback
+        board = boardFrame
+        paddle = paddleFrame
+        isGameOverCallback = gameOverCallback
+        onLaunch = launchCallback
 
-    if paddle then
-        paddlePosition = paddle.Position.X.Scale
+        if paddle then
+            paddlePosition = paddle.Position.X.Scale
     end
 
     local function onInputBegan(input, gameProcessed)
+
+        -- CLIC: FUNCIONA EN AMBOS MODOS.
+
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+            local isGameOver = isGameOverCallback
+                and isGameOverCallback()
+
+                if isGameOver then
+
+                    if onLaunch then
+                        onLaunch()
+                    end
+
+                elseif isMouseInsideBoard() then
+
+                    if onLaunch then
+                        onLaunch()
+                    end
+                end
+
+                return
+            end
+
+        -- GAME OVER: TAMBIÉN SE ACEPTA ESPACIO.
+
+        if isGameOverCallback and isGameOverCallback() then
+
+            if input.KeyCode == Enum.KeyCode.Space then
+
+                if onLaunch then
+                    onLaunch()
+                end
+            end
+
+            return
+        end
+
+        -- CONTROLES NORMALES DEL TECLADO.
 
         if activeMode == "Keyboard" then
 
@@ -166,16 +205,6 @@ function BrickBreakerInput.Start(boardFrame, paddleFrame, launchCallback)
                 rightPressed = true
 
             elseif input.KeyCode == Enum.KeyCode.Space then
-
-                if onLaunch then
-                    onLaunch()
-                end
-            end
-
-        elseif activeMode == "Mouse" then
-
-            if input.UserInputType == Enum.UserInputType.MouseButton1
-                and isMouseInsideBoard() then
 
                 if onLaunch then
                     onLaunch()
@@ -232,6 +261,7 @@ function BrickBreakerInput.Stop()
     board = nil
     paddle = nil
     onLaunch = nil
+    isGameOverCallback = nil
 end
 
 return BrickBreakerInput
