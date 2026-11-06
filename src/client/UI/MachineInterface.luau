@@ -744,133 +744,399 @@ function MachineInterface.Create(
     
     -- PANTALLA INICIAL
     -- ESTILO ARCADE CLÁSICO PRESS START
+    -- PANTALLAS INICIALES DE CADA MINIJUEGO
 
     local startView = createView("StartView", "Start")
 
     startView.BackgroundColor3 = Color3.fromRGB(3, 3, 10)
     startView.BackgroundTransparency = 0
 
-    -- DECORACIÓN: LADRILLOS
+    -- BRICK BREAKER
 
-    local brickColors = {
-        Color3.fromRGB(235, 65, 65),
-        Color3.fromRGB(240, 155, 45),
-        Color3.fromRGB(235, 215, 65),
-        Color3.fromRGB(65, 195, 105),
-        Color3.fromRGB(65, 145, 235),
-    }
+    if minigameId == "BrickBreaker" then
 
-    for row = 1, 2 do
-        for column = 1, 7 do
+        -- DECORACIÓN: LADRILLOS
 
-            local brick = create("Frame", {
-                Name = "TitleBrick_" .. row .. "_" .. column,
+        local brickColors = {
+            Color3.fromRGB(235, 65, 65),
+            Color3.fromRGB(240, 155, 45),
+            Color3.fromRGB(235, 215, 65),
+            Color3.fromRGB(65, 195, 105),
+            Color3.fromRGB(65, 145, 235),
+        }
 
-                Position = UDim2.fromScale(
-                    0.20 + (column - 1) * 0.087,
-                    0.12 + (row - 1) * 0.055
-                ),
+        for row = 1, 2 do
+            for column = 1, 7 do
 
-                Size = UDim2.fromScale(0.075, 0.035),
+                local brick = create("Frame", {
+                    Name = "TitleBrick_" .. row .. "_" .. column,
 
-                BackgroundColor3 = brickColors[row + 2],
+                    Position = UDim2.fromScale(
+                        0.20 + (column - 1) * 0.087,
+                        0.12 + (row - 1) * 0.055
+                    ),
+
+                    Size = UDim2.fromScale(0.075, 0.035),
+
+                    BackgroundColor3 = brickColors[row + 2],
+                    BorderSizePixel = 0,
+
+                    ZIndex = 22,
+                }, startView)
+
+                addStroke(brick, Color3.fromRGB(255, 255, 255), 1)
+
+            end
+        end
+
+        -- TÍTULO
+
+        local title = createLabel(
+            startView,
+            "ArcadeGameTitle",
+            "BRICK BREAKER",
+            UDim2.fromScale(0.9, 0.17),
+            UDim2.fromScale(0.05, 0.29),
+            48,
+            Color3.fromRGB(255, 180, 65),
+            Enum.Font.Arcade
+        )
+
+        title.ZIndex = 23
+        title.TextStrokeColor3 = Color3.fromRGB(185, 65, 15)
+        title.TextStrokeTransparency = 0.15
+
+        -- SUBTÍTULO
+
+        local subtitle = createLabel(
+            startView,
+            "ArcadeSubtitle",
+            "THE CLASSIC ARCADE CHALLENGE",
+            UDim2.fromScale(0.9, 0.07),
+            UDim2.fromScale(0.05, 0.47),
+            15,
+            Color3.fromRGB(120, 190, 255),
+            Enum.Font.Code
+        )
+
+        subtitle.ZIndex = 23
+
+        -- PELOTA DECORATIVA
+
+        local decorativeBall = create("Frame", {
+
+            Name = "DecorativeBall",
+
+            Position = UDim2.fromScale(0.18, 0.67),
+            Size = UDim2.fromOffset(15, 15),
+
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+            BorderSizePixel = 0,
+
+            ZIndex = 24,
+
+        }, startView)
+
+        addCorner(decorativeBall, 50)
+
+        local ballTween = TweenService:Create(
+            decorativeBall,
+            TweenInfo.new(
+                1.1,
+                Enum.EasingStyle.Sine,
+                Enum.EasingDirection.InOut,
+                -1,
+                true
+            ),
+            {
+                Position = UDim2.fromScale(0.80, 0.67),
+            }
+        )
+
+        ballTween:Play()
+
+        -- PALA DECORATIVA
+
+        local decorativePaddle = create("Frame", {
+
+            Name = "DecorativePaddle",
+
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.76),
+
+            Size = UDim2.fromScale(0.19, 0.025),
+
+            BackgroundColor3 = Color3.fromRGB(70, 175, 255),
+            BorderSizePixel = 0,
+
+            ZIndex = 23,
+
+        }, startView)
+
+        addCorner(decorativePaddle, 4)
+
+    -- BLOCK PUZZLE
+
+    elseif minigameId == "BlockPuzzle" then
+
+        local blockColors = {
+            Color3.fromRGB(45, 180, 245),
+            Color3.fromRGB(245, 190, 55),
+            Color3.fromRGB(155, 90, 235),
+            Color3.fromRGB(65, 205, 130),
+        }
+
+        local blockPattern = {
+            {0, 0, 1, 0, 0},
+            {0, 1, 1, 1, 0},
+            {1, 1, 1, 1, 1},
+            {0, 0, 1, 0, 0},
+        }
+
+        for row, columns in ipairs(blockPattern) do
+            for column, value in ipairs(columns) do
+
+                if value == 1 then
+
+                    local block = create("Frame", {
+
+                        Name = "PuzzleBlock_" .. row .. "_" .. column,
+
+                        Position = UDim2.fromScale(
+                            0.5 + (column - 3) * 0.075,
+                            0.20 + (row - 1) * 0.065
+                        ),
+
+                        Size = UDim2.fromScale(0.065, 0.055),
+
+                        BackgroundColor3 =
+                            blockColors[(row + column - 2) % #blockColors + 1],
+
+                        BorderSizePixel = 0,
+
+                        ZIndex = 22,
+
+                    }, startView)
+
+                    addStroke(block, Color3.fromRGB(255, 255, 255), 1)
+
+                end
+
+            end
+        end
+
+        createLabel(
+            startView,
+            "ArcadeGameTitle",
+            "BLOCK PUZZLE",
+            UDim2.fromScale(0.9, 0.17),
+            UDim2.fromScale(0.05, 0.54),
+            42,
+            theme.Primary,
+            Enum.Font.Arcade
+        ).ZIndex = 23
+
+        createLabel(
+            startView,
+            "ArcadeSubtitle",
+            "BUILD. MATCH. CLEAR.",
+            UDim2.fromScale(0.9, 0.07),
+            UDim2.fromScale(0.05, 0.70),
+            17,
+            COLORS.White,
+            Enum.Font.Code
+        ).ZIndex = 23
+
+    -- BUBBLE SHOOTER
+
+    elseif minigameId == "BubbleShooter" then
+
+        local bubbleColors = {
+            Color3.fromRGB(245, 75, 105),
+            Color3.fromRGB(75, 175, 245),
+            Color3.fromRGB(245, 205, 65),
+            Color3.fromRGB(125, 220, 125),
+            Color3.fromRGB(185, 100, 245),
+        }
+
+        for row = 1, 3 do
+            for column = 1, 7 do
+
+                local bubble = create("Frame", {
+
+                    Name = "TitleBubble_" .. row .. "_" .. column,
+
+                    Position = UDim2.fromScale(
+                        0.23 + (column - 1) * 0.09,
+                        0.13 + (row - 1) * 0.065
+                    ),
+
+                    Size = UDim2.fromScale(0.075, 0.075),
+
+                    BackgroundColor3 =
+                        bubbleColors[(row + column - 2) % #bubbleColors + 1],
+
+                    BorderSizePixel = 0,
+
+                    ZIndex = 22,
+
+                }, startView)
+
+                addCorner(bubble, 50)
+                addStroke(bubble, Color3.fromRGB(255, 255, 255), 1)
+
+            end
+        end
+
+        createLabel(
+            startView,
+            "ArcadeGameTitle",
+            "BUBBLE SHOOTER",
+            UDim2.fromScale(0.9, 0.17),
+            UDim2.fromScale(0.05, 0.47),
+            38,
+            theme.Primary,
+            Enum.Font.Arcade
+        ).ZIndex = 23
+
+        createLabel(
+            startView,
+            "ArcadeSubtitle",
+            "AIM. SHOOT. POP!",
+            UDim2.fromScale(0.9, 0.07),
+            UDim2.fromScale(0.05, 0.64),
+            17,
+            COLORS.White,
+            Enum.Font.Code
+        ).ZIndex = 23
+
+        -- LANZADOR DECORATIVO
+
+        local shooter = create("Frame", {
+
+            Name = "BubbleShooterLauncher",
+
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.77),
+
+            Size = UDim2.fromScale(0.09, 0.09),
+
+            BackgroundColor3 = theme.Primary,
+            BorderSizePixel = 0,
+
+            ZIndex = 23,
+
+        }, startView)
+
+        addCorner(shooter, 50)
+
+    -- SPACE SHOOTER
+
+    elseif minigameId == "SpaceShooter" then
+
+        -- ESTRELLAS
+
+        local starPositions = {
+            {0.15, 0.18},
+            {0.28, 0.30},
+            {0.78, 0.17},
+            {0.85, 0.36},
+            {0.18, 0.58},
+            {0.80, 0.65},
+            {0.35, 0.78},
+            {0.68, 0.80},
+        }
+
+        for index, position in ipairs(starPositions) do
+
+            create("Frame", {
+
+                Name = "SpaceStar_" .. index,
+
+                Position = UDim2.fromScale(position[1], position[2]),
+
+                Size = UDim2.fromOffset(4, 4),
+
+                BackgroundColor3 = COLORS.White,
                 BorderSizePixel = 0,
 
                 ZIndex = 22,
+
             }, startView)
 
-            addStroke(brick, Color3.fromRGB(255, 255, 255), 1)
+        end
+
+        -- NAVES ENEMIGAS
+
+        for index = 1, 3 do
+
+            create("Frame", {
+
+                Name = "EnemyShip_" .. index,
+
+                Position = UDim2.fromScale(
+                    0.32 + (index - 1) * 0.16,
+                    0.25
+                ),
+
+                Size = UDim2.fromScale(0.07, 0.055),
+
+                Rotation = 45,
+
+                BackgroundColor3 = theme.Primary,
+                BorderSizePixel = 0,
+
+                ZIndex = 23,
+
+            }, startView)
 
         end
+
+        createLabel(
+            startView,
+            "ArcadeGameTitle",
+            "SPACE SHOOTER",
+            UDim2.fromScale(0.9, 0.17),
+            UDim2.fromScale(0.05, 0.46),
+            39,
+            theme.Primary,
+            Enum.Font.Arcade
+        ).ZIndex = 23
+
+        createLabel(
+            startView,
+            "ArcadeSubtitle",
+            "DEFEND THE GALAXY",
+            UDim2.fromScale(0.9, 0.07),
+            UDim2.fromScale(0.05, 0.63),
+            17,
+            COLORS.White,
+            Enum.Font.Code
+        ).ZIndex = 23
+
+        -- NAVE DEL JUGADOR
+
+        create("Frame", {
+
+            Name = "PlayerShip",
+
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.77),
+
+            Size = UDim2.fromScale(0.055, 0.09),
+
+            Rotation = 45,
+
+            BackgroundColor3 = Color3.fromRGB(100, 220, 255),
+            BorderSizePixel = 0,
+
+            ZIndex = 23,
+
+        }, startView)
+
     end
 
-    -- TÍTULO PRINCIPAL
-
-    local title = createLabel(
-        startView,
-        "ArcadeGameTitle",
-        "BRICK BREAKER",
-        UDim2.fromScale(0.9, 0.17),
-        UDim2.fromScale(0.05, 0.29),
-        48,
-        Color3.fromRGB(255, 180, 65),
-        Enum.Font.Arcade
-    )
-
-    title.ZIndex = 23
-    title.TextStrokeColor3 = Color3.fromRGB(185, 65, 15)
-    title.TextStrokeTransparency = 0.15
-
-    -- SUBTÍTULO
-
-    local subtitle = createLabel(
-        startView,
-        "ArcadeSubtitle",
-        "THE CLASSIC ARCADE CHALLENGE",
-        UDim2.fromScale(0.9, 0.07),
-        UDim2.fromScale(0.05, 0.47),
-        15,
-        Color3.fromRGB(120, 190, 255),
-        Enum.Font.Code
-    )
-
-    subtitle.ZIndex = 23
-
-    -- PELOTA DECORATIVA
-
-    local decorativeBall = create("Frame", {
-
-        Name = "DecorativeBall",
-
-        Position = UDim2.fromScale(0.18, 0.67),
-        Size = UDim2.fromOffset(15, 15),
-
-        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-        BorderSizePixel = 0,
-
-        ZIndex = 24,
-
-    }, startView)
-
-    addCorner(decorativeBall, 50)
-
-    local ballTween = TweenService:Create(
-        decorativeBall,
-        TweenInfo.new(
-            1.1,
-            Enum.EasingStyle.Sine,
-            Enum.EasingDirection.InOut,
-            -1,
-            true
-        ),
-        {
-            Position = UDim2.fromScale(0.80, 0.67),
-        }
-    )
-
-    ballTween:Play()
-
-    -- PALA DECORATIVA
-
-    local decorativePaddle = create("Frame", {
-
-        Name = "DecorativePaddle",
-
-        AnchorPoint = Vector2.new(0.5, 0.5),
-        Position = UDim2.fromScale(0.5, 0.76),
-
-        Size = UDim2.fromScale(0.19, 0.025),
-
-        BackgroundColor3 = Color3.fromRGB(70, 175, 255),
-        BorderSizePixel = 0,
-
-        ZIndex = 23,
-
-    }, startView)
-
-    addCorner(decorativePaddle, 4)
-
-    -- PRESS START PARPADEANTE
+    -- PRESS START PARPADEANTE (COMÚN)
 
     local pressStart = createLabel(
         startView,
@@ -902,7 +1168,6 @@ function MachineInterface.Create(
     )
 
     blinkTween:Play()
-
 
     -- TRANSICIÓN ENTRE NIVELES
 

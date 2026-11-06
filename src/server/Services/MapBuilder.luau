@@ -728,11 +728,6 @@ local function createZoneArchitecture(parent)
         -- Extremos reales de las columnas del arco.
         local diagonal = math.sqrt(2)
 
-        local tangent = Vector3.new(
-            1 / diagonal,
-            0,
-            -1 / diagonal
-        )
 
         -- Extremo que conecta con la pared lateral.
         local endpointA = Vector3.new(

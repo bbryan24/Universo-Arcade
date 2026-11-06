@@ -25,11 +25,11 @@ local MachineInterface = require(
         :WaitForChild("MachineInterface")
 )
 
-local BrickBreakerController = require(
+
+local MinigameRegistry = require(
     script.Parent.Parent
         :WaitForChild("Minigames")
-        :WaitForChild("BrickBreaker")
-        :WaitForChild("BrickBreakerController")
+        :WaitForChild("MinigameRegistry")
 )
 
 local remote = ReplicatedStorage
@@ -45,7 +45,8 @@ local activeMachine = nil
 local sessionActive = false
 local exitRequested = false
 local closingAnimationStarted = false
-local brickBreakerActive = false
+local minigameActive = false
+local activeMinigameController = nil
 
 -- CÁMARA
 
@@ -172,21 +173,26 @@ end
 
 -- DETENER MINIJUEGO
 
+
+-- DETENER MINIJUEGO
+
 local function stopActiveMinigame()
 
-    if not brickBreakerActive then
+    if not minigameActive or not activeMinigameController then
         return
     end
 
     pcall(function()
-        BrickBreakerController.Stop()
+        activeMinigameController.Stop()
     end)
 
-    brickBreakerActive = false
+    minigameActive = false
+    activeMinigameController = nil
 
-    print("[Universo Arcade] BrickBreaker detenido.")
+    print("[Universo Arcade] Minijuego detenido.")
 
 end
+
 
 -- SOLICITAR SALIDA DE LA RECREATIVA
 
@@ -229,9 +235,17 @@ end
 
 -- INICIAR MINIJUEGO
 
+
+-- INICIAR MINIJUEGO
+
 local function startActiveMinigame(minigameId)
 
-    if minigameId ~= "BrickBreaker" then
+    -- BUSCAR CONTROLADOR EN EL REGISTRO.
+
+    local minigameController =
+        MinigameRegistry.GetController(minigameId)
+
+    if not minigameController then
         warn("[Universo Arcade] Minijuego todavía no implementado:", minigameId)
         requestExit()
         return
@@ -251,7 +265,11 @@ local function startActiveMinigame(minigameId)
         return
     end
 
-    -- CALLBACKS DEL BRICKBREAKER
+    -- GUARDAR CONTROLADOR ACTIVO.
+
+    activeMinigameController = minigameController
+
+    -- CALLBACKS DEL MINIJUEGO.
 
     local callbacks = {
 
@@ -284,7 +302,9 @@ local function startActiveMinigame(minigameId)
                         return
                     end
 
-                    BrickBreakerController.ContinueLevel()
+                    if activeMinigameController then
+                        activeMinigameController.ContinueLevel()
+                    end
 
                 end
             )
@@ -310,8 +330,6 @@ local function startActiveMinigame(minigameId)
 
         end,
 
-        -- REINICIAR PARTIDA DESDE GAME OVER.
-
         onRestart = function()
 
             if not sessionActive or not activeInterface then
@@ -322,42 +340,48 @@ local function startActiveMinigame(minigameId)
 
         end,
 
-        }
+    }
 
-    -- INICIAR CONTROLADOR
+    -- INICIAR CONTROLADOR.
 
     local success, errorMessage = pcall(function()
 
-        BrickBreakerController.Start(
+        activeMinigameController.Start(
             gameScreen,
             callbacks
         )
 
-        BrickBreakerController.Pause()
+        activeMinigameController.Pause()
 
     end)
 
     if not success then
 
         warn(
-            "[Universo Arcade] Error iniciando BrickBreaker:",
+            "[Universo Arcade] Error iniciando minijuego:",
             errorMessage
         )
 
         pcall(function()
-            BrickBreakerController.Stop()
+            activeMinigameController.Stop()
         end)
+
+        activeMinigameController = nil
 
         requestExit()
         return
 
     end
 
-    brickBreakerActive = true
+    minigameActive = true
 
-    print("[Universo Arcade] BrickBreaker iniciado correctamente.")
+    print(
+        "[Universo Arcade] Minijuego iniciado correctamente:",
+        minigameId
+    )
 
 end
+
 
 -- CREAR INTERFAZ Y ABRIR RECREATIVA
 
@@ -447,12 +471,14 @@ local function startMachine(machine, minigameId)
                     return
                 end
 
-                if not brickBreakerActive then
+                if not minigameActive or not activeMinigameController then
                     return
                 end
 
                 task.defer(function()
-                    BrickBreakerController.Resume()
+                    if activeMinigameController then
+                        activeMinigameController.Resume()
+                    end
                 end)
             end,
 
@@ -460,8 +486,8 @@ local function startMachine(machine, minigameId)
 
             function()
 
-                if brickBreakerActive then
-                    BrickBreakerController.Pause()
+                if minigameActive and activeMinigameController then
+                    activeMinigameController.Pause()
                 end
 
             end,
@@ -470,8 +496,8 @@ local function startMachine(machine, minigameId)
 
             function()
 
-                if brickBreakerActive then
-                    BrickBreakerController.Resume()
+                if minigameActive and activeMinigameController then
+                    activeMinigameController.Resume()
                 end
 
             end
