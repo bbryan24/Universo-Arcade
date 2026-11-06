@@ -50,6 +50,27 @@ local level = 1
 local gameStarted = false
 local gameOver = false
 
+-- CICLO DE VIDA E INTEGRACIÓN CON LA INTERFAZ
+
+type BrickBreakerStats = {
+    Score: number,
+    Lives: number,
+    Level: number,
+}
+
+type BrickBreakerCallbacks = {
+    onStatsChanged: ((data: BrickBreakerStats) -> ())?,
+    onLevelCompleted: ((completedLevel: number, nextLevel: number) -> ())?,
+    onGameOver: ((data: BrickBreakerStats) -> ())?,
+}
+
+local callbacks: BrickBreakerCallbacks = {}
+local isTransitioning = false
+local pendingCompletedLevel = nil
+
+-- Declaración anticipada para evitar crear una variable global.
+local resetGame
+
 local ballVelocity = Vector2.zero
 local activeBalls = {}
 
@@ -790,6 +811,14 @@ local function updateHUD()
 
     if machineBestValue then
         machineBestValue.Text = "--"
+    end
+
+        if callbacks.onStatsChanged then
+        callbacks.onStatsChanged({
+            Score = score,
+            Lives = lives,
+            Level = level,
+        })
     end
 
 end
@@ -1665,12 +1694,7 @@ end
 
 local function launchBall()
 
-    if isPaused then
-        return
-    end
-
-    if gameOver then
-        resetGame()
+        if isPaused or isTransitioning or gameOver then
         return
     end
 
@@ -1724,6 +1748,20 @@ local function launchBall()
     end
 
     setStatus("")
+
+end
+
+--==================================================
+-- INICIAR LA PELOTA DESDE LA INTERFAZ
+--==================================================
+
+function BrickBreakerController.Launch()
+
+    if not boardElements then
+        return
+    end
+
+    launchBall()
 
 end
 
@@ -1929,7 +1967,27 @@ end
 
 local function completeLevel()
 
+    if isTransitioning or gameOver then
+        return
+    end
+
     local completedLevel = level
+
+    pendingCompletedLevel = completedLevel
+
+    isTransitioning = true
+    gameStarted = false
+    ballVelocity = Vector2.zero
+
+    -- DETENER LOS CONTROLES DURANTE LA TRANSICIÓN.
+
+    if inputStarted then
+
+        BrickBreakerInput.Stop()
+
+        inputStarted = false
+
+    end
 
     level += 1
 
@@ -1939,6 +1997,37 @@ local function completeLevel()
 
     currentSpeed = getSpeedForLevel(level)
 
+    updateHUD()
+
+    -- LA INTERFAZ SE ENCARGARÁ DE MOSTRAR LA TRANSICIÓN.
+
+    if callbacks.onLevelCompleted then
+
+        callbacks.onLevelCompleted(
+            completedLevel,
+            level
+        )
+
+    else
+
+        BrickBreakerController.ContinueLevel()
+
+    end
+
+end
+
+--==================================================
+-- CONTINUAR DESPUÉS DE LA TRANSICIÓN DE NIVEL
+--==================================================
+
+function BrickBreakerController.ContinueLevel()
+
+    if not boardElements or not isTransitioning then
+        return
+    end
+
+    isTransitioning = false
+
     restoreBricks()
 
     updateHUD()
@@ -1946,8 +2035,28 @@ local function completeLevel()
     resetBall()
 
     setStatus(
-        "¡NIVEL " .. completedLevel .. " COMPLETADO!"
+        "¡NIVEL "
+            .. tostring(pendingCompletedLevel)
+            .. " COMPLETADO!"
     )
+
+    pendingCompletedLevel = nil
+
+    -- REACTIVAR LOS CONTROLES.
+
+    if not inputStarted then
+
+        BrickBreakerInput.Start(
+            boardElements.Board,
+            boardElements.Paddle,
+            launchBall
+        )
+
+        BrickBreakerInput.SetMode(activeMode)
+
+        inputStarted = true
+
+    end
 
 end
 
@@ -1965,8 +2074,19 @@ local function loseLife()
 
         gameStarted = false
         gameOver = true
+        isTransitioning = false
 
         ballVelocity = Vector2.zero
+
+        -- DETENER LOS CONTROLES AL TERMINAR LA PARTIDA.
+
+        if inputStarted then
+
+            BrickBreakerInput.Stop()
+
+            inputStarted = false
+
+        end
 
         paddleWideUntil = 0
         slowBallUntil = 0
@@ -1978,9 +2098,20 @@ local function loseLife()
 
         updatePowerUpVisuals()
 
-        setStatus("GAME OVER - PULSA ESPACIO PARA REINICIAR")
+        setStatus("GAME OVER")
+
+        if callbacks.onGameOver then
+
+            callbacks.onGameOver({
+                Score = score,
+                Lives = lives,
+                Level = level,
+            })
+
+        end
 
         return
+
     end
 
     resetBall()
@@ -2405,10 +2536,6 @@ end
 
 local function setPaused(shouldPause)
 
-    if not RunService:IsStudio() then
-        return
-    end
-
     if shouldPause == isPaused then
         return
     end
@@ -2421,20 +2548,14 @@ local function setPaused(shouldPause)
         -- DETENER INPUT PARA QUE LA PALA TAMPOCO SE MUEVA.
 
         if inputStarted then
-
             BrickBreakerInput.Stop()
-
             inputStarted = false
-
         end
 
         if developerPauseButton then
-
             developerPauseButton.Text = "REANUDAR"
-
             developerPauseButton.BackgroundColor3 =
                 Color3.fromRGB(45, 155, 100)
-
         end
 
         setStatus("PARTIDA PAUSADA")
@@ -2470,8 +2591,11 @@ local function setPaused(shouldPause)
 
         -- VOLVER A ACTIVAR LOS CONTROLES.
 
-        if boardElements then
-
+        if boardElements
+            and not gameOver
+            and not isTransitioning
+            and not inputStarted
+        then
             BrickBreakerInput.Start(
                 boardElements.Board,
                 boardElements.Paddle,
@@ -2479,34 +2603,36 @@ local function setPaused(shouldPause)
             )
 
             BrickBreakerInput.SetMode(activeMode)
-
             inputStarted = true
-
         end
 
         if developerPauseButton then
-
             developerPauseButton.Text = "PAUSAR"
-
             developerPauseButton.BackgroundColor3 =
                 Color3.fromRGB(185, 105, 45)
-
         end
 
         if gameStarted then
-
             setStatus("")
-
         else
-
             setStatus("PULSA ESPACIO O HAZ CLIC PARA JUGAR")
-
         end
 
         updatePowerUpVisuals()
 
     end
+end
 
+--==================================================
+-- PAUSA DESDE LA INTERFAZ
+--==================================================
+
+function BrickBreakerController.Pause()
+    setPaused(true)
+end
+
+function BrickBreakerController.Resume()
+    setPaused(false)
 end
 
 --==================================================
@@ -2869,11 +2995,19 @@ end
 -- INICIAR CONTROLADOR
 --==================================================
 
-function BrickBreakerController.Start(parent)
+function BrickBreakerController.Start(
+    parent,
+    eventCallbacks: BrickBreakerCallbacks?
+)
 
     if boardElements then
         BrickBreakerController.Stop()
     end
+
+    callbacks = eventCallbacks or {}
+
+    isTransitioning = false
+    pendingCompletedLevel = nil
 
     -- CREAR TABLERO.
 
@@ -2998,7 +3132,11 @@ function BrickBreakerController.Start(parent)
     gameConnection = RunService.Heartbeat:Connect(
         function(deltaTime)
 
-            if not boardElements or gameOver or isPaused then
+            if not boardElements
+                or gameOver
+                or isPaused
+                or isTransitioning then
+
                 return
             end
 
@@ -3118,6 +3256,11 @@ function BrickBreakerController.Stop()
     pausedAt = 0
 
     statusMessageVersion += 1
+
+        isTransitioning = false
+    pendingCompletedLevel = nil
+
+    callbacks = {}
 
 end
 

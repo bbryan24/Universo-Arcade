@@ -4,11 +4,16 @@
     MachineInterface
 
     Construye el mueble físico de las recreativas.
-    Estética retro de los años 90 con gráficos impresos
-    y acabados industriales opacos.
+    Gestiona las vistas, el inicio de partida, la confirmación
+    de salida, las estadísticas y las animaciones.
 ]]
 
 local MachineInterface = {}
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local GuiService = game:GetService("GuiService")
 
 -- IDENTIDAD VISUAL DE CADA RECREATIVA
 
@@ -84,6 +89,7 @@ local function create(className, properties, parent)
     object.Parent = parent
 
     return object
+
 end
 
 local function addCorner(parent, radius)
@@ -183,7 +189,6 @@ end
 local function createSideArtwork(parent, theme, side)
 
     local isLeft = side == "Left"
-
     local xPosition = isLeft and 0.018 or 0.962
 
     local artwork = create("Frame", {
@@ -200,8 +205,6 @@ local function createSideArtwork(parent, theme, side)
 
     addCorner(artwork, 4)
 
-    -- FRANJA IMPRESA DE COLOR
-
     create("Frame", {
 
         Name = "ArtworkStripe",
@@ -213,8 +216,6 @@ local function createSideArtwork(parent, theme, side)
         BorderSizePixel = 0,
 
     }, artwork)
-
-    -- DETALLES GRÁFICOS
 
     for index = 1, 5 do
 
@@ -244,13 +245,32 @@ end
 
 -- CONSTRUIR RECREATIVA
 
-function MachineInterface.Create(minigameId, playerName, onExit)
+function MachineInterface.Create(
+    minigameId,
+    playerName,
+    onExit,
+    onStart,
+    onPause,
+    onResume
+)
 
     local theme = THEMES[minigameId] or THEMES.BrickBreaker
 
-    local playerGui = game:GetService("Players")
-        .LocalPlayer
-        :WaitForChild("PlayerGui")
+    playerName = playerName or "PLAYER"
+
+    local playerGui = Players.LocalPlayer:WaitForChild("PlayerGui")
+
+    -- ESTADO INTERNO DE LA INTERFAZ
+
+    local interface = nil
+    local currentView = "Start"
+    local previousView = "Start"
+
+    local showView
+    local beginGame
+
+    local startInputConnection = nil
+    local startRequested = false
 
     -- INTERFAZ GENERAL
 
@@ -316,7 +336,7 @@ function MachineInterface.Create(minigameId, playerName, onExit)
 
     addCorner(cabinetFace, 9)
 
-    -- BANDA SUPERIOR DEL MUEBLE
+    -- BANDA SUPERIOR
 
     local header = create("Frame", {
 
@@ -332,8 +352,6 @@ function MachineInterface.Create(minigameId, playerName, onExit)
 
     addCorner(header, 6)
     addStroke(header, COLORS.MetalDark, 2)
-
-    -- FRANJA DE IDENTIDAD IMPRESA
 
     create("Frame", {
 
@@ -377,7 +395,7 @@ function MachineInterface.Create(minigameId, playerName, onExit)
         COLORS.White
     )
 
-    -- PLACA METÁLICA DE IDENTIFICACIÓN
+    -- PLACA METÁLICA
 
     local machinePlate = create("Frame", {
 
@@ -425,18 +443,11 @@ function MachineInterface.Create(minigameId, playerName, onExit)
 
         AutoButtonColor = true,
 
+        ZIndex = 10,
+
     }, cabinet)
 
     addCorner(exitButton, 4)
-
-    exitButton.Activated:Connect(function()
-
-        exitButton.Active = false
-        exitButton.Text = "SALIENDO..."
-
-        onExit()
-
-    end)
 
     -- MARCO DE LA PANTALLA
 
@@ -472,10 +483,8 @@ function MachineInterface.Create(minigameId, playerName, onExit)
     addCorner(innerBezel, 5)
 
     -- ZONA DE JUEGO
-    -- SE MANTIENE COMO HIJO DIRECTO DEL CABINET
-    -- PARA CONSERVAR LA CONEXIÓN CON LOS MINIJUEGOS.
 
-    create("Frame", {
+    local gameScreen = create("Frame", {
 
         Name = "GameScreen",
 
@@ -489,12 +498,10 @@ function MachineInterface.Create(minigameId, playerName, onExit)
 
     }, cabinet)
 
-    -- DETALLES LATERALES IMPRESOS
+    -- DETALLES LATERALES
 
     createSideArtwork(cabinet, theme, "Left")
     createSideArtwork(cabinet, theme, "Right")
-
-    -- MARCA DECORATIVA SOBRE LA PANTALLA
 
     createLabel(
         cabinet,
@@ -506,7 +513,7 @@ function MachineInterface.Create(minigameId, playerName, onExit)
         COLORS.Muted
     )
 
-    -- ESTADÍSTICAS INTEGRADAS EN LA PARTE INFERIOR
+    -- PANEL DE ESTADÍSTICAS
 
     local stats = create("Frame", {
 
@@ -522,8 +529,6 @@ function MachineInterface.Create(minigameId, playerName, onExit)
 
     addCorner(stats, 5)
     addStroke(stats, COLORS.MetalDark, 2)
-
-    -- SEPARADORES DE LAS ESTADÍSTICAS
 
     for index = 1, 2 do
 
@@ -541,7 +546,7 @@ function MachineInterface.Create(minigameId, playerName, onExit)
 
     end
 
-        -- SCORE
+    -- SCORE
 
     createLabel(
         stats,
@@ -553,24 +558,17 @@ function MachineInterface.Create(minigameId, playerName, onExit)
         theme.Primary
     )
 
-    create("TextLabel", {
-        Name = "ScoreValue",
-        BackgroundTransparency = 1,
-        Position = UDim2.fromScale(0.025, 0.43),
-        Size = UDim2.fromScale(0.28, 0.48),
-        Text = "0",
-        TextColor3 = COLORS.White,
-        TextSize = 17,
-        Font = Enum.Font.GothamBold,
-        TextScaled = false,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        TextYAlignment = Enum.TextYAlignment.Center,
-    }, stats)
+    createLabel(
+        stats,
+        "ScoreValue",
+        "0",
+        UDim2.fromScale(0.28, 0.48),
+        UDim2.fromScale(0.025, 0.43),
+        17,
+        COLORS.White
+    )
 
     -- LEVEL
-
-        -- LEVEL
 
     createLabel(
         stats,
@@ -582,20 +580,16 @@ function MachineInterface.Create(minigameId, playerName, onExit)
         theme.Primary
     )
 
-    create("TextLabel", {
-        Name = "LevelValue",
-        BackgroundTransparency = 1,
-        Position = UDim2.fromScale(0.36, 0.43),
-        Size = UDim2.fromScale(0.28, 0.48),
-        Text = "1",
-        TextColor3 = COLORS.White,
-        TextSize = 17,
-        Font = Enum.Font.GothamBold,
-        TextScaled = false,
-        TextWrapped = true,
-        TextXAlignment = Enum.TextXAlignment.Center,
-        TextYAlignment = Enum.TextYAlignment.Center,
-    }, stats)
+    createLabel(
+        stats,
+        "LevelValue",
+        "1",
+        UDim2.fromScale(0.28, 0.48),
+        UDim2.fromScale(0.36, 0.43),
+        17,
+        COLORS.White
+    )
+
     -- BEST
 
     createLabel(
@@ -618,7 +612,747 @@ function MachineInterface.Create(minigameId, playerName, onExit)
         COLORS.White
     )
 
-    -- REMACHES METÁLICOS DEL MUEBLE
+    -- SISTEMA DE VISTAS
+
+    local interfaceOverlay = create("Frame", {
+
+        Name = "InterfaceOverlay",
+
+        Size = UDim2.fromScale(1, 1),
+
+        BackgroundTransparency = 1,
+        BorderSizePixel = 0,
+
+        ZIndex = 20,
+        Visible = true,
+
+    }, gameScreen)
+
+    local views = {}
+
+    local function createView(name, stateName)
+
+        local view = create("Frame", {
+
+            Name = name,
+
+            Size = UDim2.fromScale(1, 1),
+
+            BackgroundColor3 = COLORS.ScreenBlack,
+            BackgroundTransparency = 0.12,
+
+            BorderSizePixel = 0,
+
+            Visible = false,
+
+            ZIndex = 20,
+
+        }, interfaceOverlay)
+
+        views[stateName or name] = view
+
+        return view
+
+    end
+
+    local function createViewPanel(parent, titleText, messageText)
+
+        local panel = create("Frame", {
+
+            Name = "ContentPanel",
+
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = UDim2.fromScale(0.5, 0.5),
+
+            Size = UDim2.fromScale(0.72, 0.68),
+
+            BackgroundColor3 = COLORS.Cabinet,
+            BorderSizePixel = 0,
+
+            ZIndex = 21,
+
+        }, parent)
+
+        addCorner(panel, 10)
+        addStroke(panel, theme.Primary, 2)
+
+        createLabel(
+            panel,
+            "ViewTitle",
+            titleText,
+            UDim2.fromScale(0.9, 0.25),
+            UDim2.fromScale(0.05, 0.08),
+            28,
+            theme.Primary
+        ).ZIndex = 22
+
+        createLabel(
+            panel,
+            "ViewMessage",
+            messageText,
+            UDim2.fromScale(0.84, 0.30),
+            UDim2.fromScale(0.08, 0.36),
+            16,
+            COLORS.White,
+            Enum.Font.GothamMedium
+        ).ZIndex = 22
+
+        return panel
+
+    end
+
+    local function createViewButton(
+        parent,
+        name,
+        text,
+        position,
+        callback
+    )
+
+        local button = create("TextButton", {
+
+            Name = name,
+
+            AnchorPoint = Vector2.new(0.5, 0.5),
+            Position = position,
+
+            Size = UDim2.fromScale(0.48, 0.16),
+
+            BackgroundColor3 = theme.Secondary,
+            BorderSizePixel = 0,
+
+            Text = text,
+            TextColor3 = COLORS.White,
+
+            TextSize = 16,
+            Font = Enum.Font.GothamBold,
+
+            AutoButtonColor = true,
+
+            ZIndex = 23,
+
+        }, parent)
+
+        addCorner(button, 6)
+        addStroke(button, theme.Primary, 1)
+
+        button.Activated:Connect(callback)
+
+        return button
+
+    end
+
+    -- PANTALLA INICIAL
+
+    
+    -- PANTALLA INICIAL
+    -- ESTILO ARCADE CLÁSICO PRESS START
+
+    local startView = createView("StartView", "Start")
+
+    startView.BackgroundColor3 = Color3.fromRGB(3, 3, 10)
+    startView.BackgroundTransparency = 0
+
+    -- DECORACIÓN: LADRILLOS
+
+    local brickColors = {
+        Color3.fromRGB(235, 65, 65),
+        Color3.fromRGB(240, 155, 45),
+        Color3.fromRGB(235, 215, 65),
+        Color3.fromRGB(65, 195, 105),
+        Color3.fromRGB(65, 145, 235),
+    }
+
+    for row = 1, 2 do
+        for column = 1, 7 do
+
+            local brick = create("Frame", {
+                Name = "TitleBrick_" .. row .. "_" .. column,
+
+                Position = UDim2.fromScale(
+                    0.20 + (column - 1) * 0.087,
+                    0.12 + (row - 1) * 0.055
+                ),
+
+                Size = UDim2.fromScale(0.075, 0.035),
+
+                BackgroundColor3 = brickColors[row + 2],
+                BorderSizePixel = 0,
+
+                ZIndex = 22,
+            }, startView)
+
+            addStroke(brick, Color3.fromRGB(255, 255, 255), 1)
+
+        end
+    end
+
+    -- TÍTULO PRINCIPAL
+
+    local title = createLabel(
+        startView,
+        "ArcadeGameTitle",
+        "BRICK BREAKER",
+        UDim2.fromScale(0.9, 0.17),
+        UDim2.fromScale(0.05, 0.29),
+        48,
+        Color3.fromRGB(255, 180, 65),
+        Enum.Font.Arcade
+    )
+
+    title.ZIndex = 23
+    title.TextStrokeColor3 = Color3.fromRGB(185, 65, 15)
+    title.TextStrokeTransparency = 0.15
+
+    -- SUBTÍTULO
+
+    local subtitle = createLabel(
+        startView,
+        "ArcadeSubtitle",
+        "THE CLASSIC ARCADE CHALLENGE",
+        UDim2.fromScale(0.9, 0.07),
+        UDim2.fromScale(0.05, 0.47),
+        15,
+        Color3.fromRGB(120, 190, 255),
+        Enum.Font.Code
+    )
+
+    subtitle.ZIndex = 23
+
+    -- PELOTA DECORATIVA
+
+    local decorativeBall = create("Frame", {
+
+        Name = "DecorativeBall",
+
+        Position = UDim2.fromScale(0.18, 0.67),
+        Size = UDim2.fromOffset(15, 15),
+
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        BorderSizePixel = 0,
+
+        ZIndex = 24,
+
+    }, startView)
+
+    addCorner(decorativeBall, 50)
+
+    local ballTween = TweenService:Create(
+        decorativeBall,
+        TweenInfo.new(
+            1.1,
+            Enum.EasingStyle.Sine,
+            Enum.EasingDirection.InOut,
+            -1,
+            true
+        ),
+        {
+            Position = UDim2.fromScale(0.80, 0.67),
+        }
+    )
+
+    ballTween:Play()
+
+    -- PALA DECORATIVA
+
+    local decorativePaddle = create("Frame", {
+
+        Name = "DecorativePaddle",
+
+        AnchorPoint = Vector2.new(0.5, 0.5),
+        Position = UDim2.fromScale(0.5, 0.76),
+
+        Size = UDim2.fromScale(0.19, 0.025),
+
+        BackgroundColor3 = Color3.fromRGB(70, 175, 255),
+        BorderSizePixel = 0,
+
+        ZIndex = 23,
+
+    }, startView)
+
+    addCorner(decorativePaddle, 4)
+
+    -- PRESS START PARPADEANTE
+
+    local pressStart = createLabel(
+        startView,
+        "PressStart",
+        "PRESS START",
+        UDim2.fromScale(0.9, 0.12),
+        UDim2.fromScale(0.05, 0.84),
+        27,
+        Color3.fromRGB(255, 255, 255),
+        Enum.Font.Arcade
+    )
+
+    pressStart.ZIndex = 24
+    pressStart.TextStrokeColor3 = theme.Primary
+    pressStart.TextStrokeTransparency = 0.1
+
+    local blinkTween = TweenService:Create(
+        pressStart,
+        TweenInfo.new(
+            0.65,
+            Enum.EasingStyle.Linear,
+            Enum.EasingDirection.InOut,
+            -1,
+            true
+        ),
+        {
+            TextTransparency = 1,
+        }
+    )
+
+    blinkTween:Play()
+
+
+    -- TRANSICIÓN ENTRE NIVELES
+
+    local levelView = createView(
+        "LevelTransitionView",
+        "LevelTransition"
+    )
+
+    local levelPanel = createViewPanel(
+        levelView,
+        "NIVEL COMPLETADO",
+        "PREPARANDO SIGUIENTE NIVEL..."
+    )
+
+    local levelTitle = levelPanel:FindFirstChild("ViewTitle")
+    local levelMessage = levelPanel:FindFirstChild("ViewMessage")
+
+    local continueButton = nil
+
+    -- GAME OVER
+
+    local gameOverView = createView("GameOverView", "GameOver")
+
+    local gameOverPanel = createViewPanel(
+        gameOverView,
+        "GAME OVER",
+        "FIN DE LA PARTIDA"
+    )
+
+    local finalScoreLabel = createLabel(
+        gameOverPanel,
+        "FinalScore",
+        "PUNTUACIÓN: 0",
+        UDim2.fromScale(0.9, 0.12),
+        UDim2.fromScale(0.05, 0.58),
+        17,
+        COLORS.White
+    )
+
+    finalScoreLabel.ZIndex = 22
+
+    local finalBestLabel = createLabel(
+        gameOverPanel,
+        "FinalBest",
+        "RÉCORD: --",
+        UDim2.fromScale(0.9, 0.10),
+        UDim2.fromScale(0.05, 0.70),
+        14,
+        theme.Primary
+    )
+
+    finalBestLabel.ZIndex = 22
+
+    createViewButton(
+        gameOverPanel,
+        "GameOverExitButton",
+        "VOLVER AL SALÓN",
+        UDim2.fromScale(0.5, 0.88),
+        function()
+
+            if currentView ~= "GameOver" then
+                return
+            end
+
+            if onExit then
+                onExit()
+            end
+
+        end
+    )
+
+    -- CONFIRMACIÓN DE SALIDA
+
+    local exitView = createView(
+        "ExitConfirmationView",
+        "ExitConfirmation"
+    )
+
+    local exitPanel = createViewPanel(
+        exitView,
+        "¿ABANDONAR PARTIDA?",
+        "Perderás la puntuación de esta partida, que no se guardará.\n\n¿Quieres abandonar?"
+    )
+
+    createViewButton(
+        exitPanel,
+        "ConfirmExitButton",
+        "SÍ, ABANDONAR",
+        UDim2.fromScale(0.28, 0.82),
+        function()
+
+            if currentView ~= "ExitConfirmation" then
+                return
+            end
+
+            if onExit then
+                onExit()
+            end
+
+        end
+    )
+
+    createViewButton(
+        exitPanel,
+        "CancelExitButton",
+        "NO, CONTINUAR",
+        UDim2.fromScale(0.72, 0.82),
+        function()
+
+            if currentView ~= "ExitConfirmation" then
+                return
+            end
+
+            local viewToRestore = previousView
+
+            showView(viewToRestore)
+
+            if viewToRestore == "Gameplay" and onResume then
+                onResume()
+            end
+
+        end
+    )
+
+    -- CONTROL DE VISIBILIDAD
+
+    showView = function(viewName)
+
+        for name, view in pairs(views) do
+            view.Visible = name == viewName
+        end
+
+        currentView = viewName
+
+    end
+
+    -- INICIO DE PARTIDA
+
+    beginGame = function()
+
+        if currentView ~= "Start" or startRequested then
+            return
+        end
+
+        startRequested = true
+
+        showView("Gameplay")
+
+        if onStart then
+            onStart()
+        end
+
+    end
+
+    -- DETECCIÓN DE TECLADO Y RATÓN
+
+    startInputConnection = UserInputService.InputBegan:Connect(
+        function(input, gameProcessed)
+
+            if currentView ~= "Start" then
+                return
+            end
+
+            -- ESPACIO
+
+            if input.KeyCode == Enum.KeyCode.Space then
+
+                if gameProcessed then
+                    return
+                end
+
+                beginGame()
+                return
+
+            end
+
+            -- CLIC DENTRO DE LA PANTALLA
+
+            if input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+                local mousePosition =
+                    UserInputService:GetMouseLocation()
+                    - GuiService:GetGuiInset()
+
+                local screenPosition = gameScreen.AbsolutePosition
+                local screenSize = gameScreen.AbsoluteSize
+
+                local insideScreen =
+                    mousePosition.X >= screenPosition.X
+                    and mousePosition.X <= screenPosition.X + screenSize.X
+                    and mousePosition.Y >= screenPosition.Y
+                    and mousePosition.Y <= screenPosition.Y + screenSize.Y
+
+                if insideScreen then
+                    beginGame()
+                end
+
+            end
+
+        end
+    )
+
+    -- API PÚBLICA DE LA INTERFAZ
+
+    interface = {}
+
+    interface.Gui = gui
+    interface.GameScreen = gameScreen
+
+    function interface.GetCurrentView()
+        return currentView
+    end
+
+    function interface.ShowStartScreen()
+
+        startRequested = false
+        showView("Start")
+
+    end
+
+    function interface.ShowGameplay()
+
+        showView("Gameplay")
+
+    end
+
+    function interface.ShowLevelTransition(
+        completedLevel,
+        nextLevel,
+        onContinue
+    )
+
+        if currentView == "ExitConfirmation" then
+            return
+        end
+
+        levelTitle.Text =
+            "NIVEL " .. tostring(completedLevel) .. " COMPLETADO"
+
+        levelMessage.Text =
+            "¡BUEN TRABAJO!\n\nPREPÁRATE PARA EL NIVEL "
+            .. tostring(nextLevel)
+
+        if continueButton then
+            continueButton:Destroy()
+            continueButton = nil
+        end
+
+        continueButton = createViewButton(
+            levelPanel,
+            "ContinueLevelButton",
+            "CONTINUAR",
+            UDim2.fromScale(0.5, 0.82),
+            function()
+
+                if currentView ~= "LevelTransition" then
+                    return
+                end
+
+                showView("Gameplay")
+
+                if onContinue then
+                    onContinue()
+                end
+
+            end
+        )
+
+        showView("LevelTransition")
+
+    end
+
+    function interface.ShowGameOver(gameStats, bestScore)
+
+        gameStats = gameStats or {}
+
+        finalScoreLabel.Text =
+            "PUNTUACIÓN: " .. tostring(gameStats.Score or 0)
+
+        finalBestLabel.Text =
+            "RÉCORD: " .. tostring(bestScore or "--")
+
+        showView("GameOver")
+
+    end
+
+    function interface.ShowExitConfirmation()
+
+        if currentView == "ExitConfirmation" then
+            return
+        end
+
+        if currentView ~= "Gameplay"
+            and currentView ~= "LevelTransition"
+        then
+
+            if onExit then
+                onExit()
+            end
+
+            return
+
+        end
+
+        previousView = currentView
+
+        if currentView == "Gameplay" and onPause then
+            onPause()
+        end
+
+        showView("ExitConfirmation")
+
+    end
+
+    function interface.SetStats(gameStats)
+
+        gameStats = gameStats or {}
+
+        local scoreLabel = stats:FindFirstChild("ScoreValue")
+        local levelLabel = stats:FindFirstChild("LevelValue")
+
+        if scoreLabel then
+            scoreLabel.Text = tostring(gameStats.Score or 0)
+        end
+
+        if levelLabel then
+            levelLabel.Text = tostring(gameStats.Level or 1)
+        end
+
+    end
+
+    function interface.SetBest(bestScore)
+
+        local bestLabel = stats:FindFirstChild("BestValue")
+
+        if bestLabel then
+            bestLabel.Text = tostring(bestScore or "--")
+        end
+
+    end
+
+    -- ANIMACIÓN DE ENTRADA
+
+    function interface.AnimateOpen()
+
+        background.BackgroundTransparency = 0.25
+
+        cabinet.Position = UDim2.fromScale(0.5, 1.5)
+
+        local tween = TweenService:Create(
+            cabinet,
+            TweenInfo.new(
+                0.65,
+                Enum.EasingStyle.Quint,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Position = UDim2.fromScale(0.5, 0.5),
+            }
+        )
+
+        local backgroundTween = TweenService:Create(
+            background,
+            TweenInfo.new(0.55),
+            {
+                BackgroundTransparency = 0,
+            }
+        )
+
+        tween:Play()
+        backgroundTween:Play()
+
+        return tween
+
+    end
+
+    -- ANIMACIÓN DE SALIDA
+
+    function interface.AnimateClose()
+
+        local tween = TweenService:Create(
+            cabinet,
+            TweenInfo.new(
+                0.5,
+                Enum.EasingStyle.Quint,
+                Enum.EasingDirection.In
+            ),
+            {
+                Position = UDim2.fromScale(0.5, 1.5),
+            }
+        )
+
+        local backgroundTween = TweenService:Create(
+            background,
+            TweenInfo.new(0.45),
+            {
+                BackgroundTransparency = 1,
+            }
+        )
+
+        tween:Play()
+        backgroundTween:Play()
+
+        return tween
+
+    end
+
+    -- CIERRE DE LA INTERFAZ
+
+    gui.Destroying:Connect(function()
+
+        if startInputConnection then
+            startInputConnection:Disconnect()
+            startInputConnection = nil
+        end
+
+    end)
+
+    -- BOTÓN DE SALIDA
+
+    exitButton.Activated:Connect(function()
+
+        if not interface then
+            return
+        end
+
+        if currentView == "Gameplay"
+            or currentView == "LevelTransition"
+        then
+
+            interface.ShowExitConfirmation()
+
+        else
+
+            if onExit then
+                onExit()
+            end
+
+        end
+
+    end)
+
+    -- ESTADO INICIAL
+
+    showView("Start")
+
+    -- REMACHES METÁLICOS
 
     createRivet(
         cabinet,
@@ -640,7 +1374,7 @@ function MachineInterface.Create(minigameId, playerName, onExit)
         UDim2.fromScale(0.975, 0.975)
     )
 
-    return gui
+    return gui, interface
 
 end
 

@@ -1,3 +1,4 @@
+
 --[[
     UNIVERSO ARCADE
     MachineClientController
@@ -5,8 +6,10 @@
     Controla:
     - Comunicación con el servidor.
     - Transición de cámara hacia la recreativa.
-    - Apertura de la interfaz.
-    - Salida y restauración de la cámara.
+    - Apertura y cierre de la interfaz.
+    - Ciclo de vida de los minijuegos.
+    - Pausa, estadísticas y transiciones.
+    - Restauración de cámara y personaje.
 ]]
 
 local Players = game:GetService("Players")
@@ -17,7 +20,9 @@ local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
 
 local MachineInterface = require(
-    script.Parent.Parent:WaitForChild("UI"):WaitForChild("MachineInterface")
+    script.Parent.Parent
+        :WaitForChild("UI")
+        :WaitForChild("MachineInterface")
 )
 
 local BrickBreakerController = require(
@@ -31,16 +36,27 @@ local remote = ReplicatedStorage
     :WaitForChild("Remotes")
     :WaitForChild("MachineSessionRemote")
 
+-- ESTADO DE SESIÓN
+
 local activeGui = nil
+local activeInterface = nil
 local activeMachine = nil
+
 local sessionActive = false
 local exitRequested = false
+local closingAnimationStarted = false
 local brickBreakerActive = false
+
+-- CÁMARA
 
 local originalCameraType = nil
 local originalCameraSubject = nil
 local originalCameraCFrame = nil
 local originalFieldOfView = nil
+
+local cameraTween = nil
+
+-- PERSONAJE
 
 local activeHumanoid = nil
 local originalWalkSpeed = nil
@@ -48,7 +64,12 @@ local originalJumpPower = nil
 local originalJumpHeight = nil
 local originalAutoRotate = nil
 
-local cameraTween = nil
+-- FUNCIONES ADELANTADAS
+
+local requestExit
+local endMachine
+
+-- GUARDAR CÁMARA
 
 local function saveCamera()
 
@@ -60,6 +81,8 @@ local function saveCamera()
     originalFieldOfView = camera.FieldOfView
 
 end
+
+-- CONGELAR PERSONAJE
 
 local function freezeCharacter()
 
@@ -89,6 +112,8 @@ local function freezeCharacter()
 
 end
 
+-- RESTAURAR PERSONAJE
+
 local function restoreCharacter()
 
     if not activeHumanoid or not activeHumanoid.Parent then
@@ -105,6 +130,8 @@ local function restoreCharacter()
 
 end
 
+-- RESTAURAR CÁMARA
+
 local function restoreCamera()
 
     if cameraTween then
@@ -115,7 +142,7 @@ local function restoreCamera()
     camera = workspace.CurrentCamera
 
     camera.CameraType = originalCameraType or Enum.CameraType.Custom
-    
+
     if originalCameraSubject and originalCameraSubject.Parent then
         camera.CameraSubject = originalCameraSubject
     end
@@ -130,6 +157,8 @@ local function restoreCamera()
 
 end
 
+-- DESTRUIR INTERFAZ
+
 local function closeInterface()
 
     if activeGui then
@@ -137,60 +166,179 @@ local function closeInterface()
         activeGui = nil
     end
 
+    activeInterface = nil
+
 end
 
--- INICIAR EL MINIJUEGO CORRESPONDIENTE
+-- DETENER MINIJUEGO
 
-local function startActiveMinigame(minigameId)
+local function stopActiveMinigame()
 
-    if minigameId ~= "BrickBreaker" then
+    if not brickBreakerActive then
         return
     end
 
-    if not activeGui then
-        warn("[Universo Arcade] No existe la interfaz del minijuego.")
+    pcall(function()
+        BrickBreakerController.Stop()
+    end)
+
+    brickBreakerActive = false
+
+    print("[Universo Arcade] BrickBreaker detenido.")
+
+end
+
+-- SOLICITAR SALIDA DE LA RECREATIVA
+
+requestExit = function()
+
+    if not sessionActive or exitRequested then
         return
     end
 
-    local arcadeBackground = activeGui:FindFirstChild("ArcadeBackground", true)
-    local cabinetFrame = arcadeBackground
-        and arcadeBackground:FindFirstChild("CabinetFrame", true)
+    exitRequested = true
 
-    local gameScreen = cabinetFrame
-        and cabinetFrame:FindFirstChild("GameScreen", true)
+    print("[Universo Arcade] Solicitando salida de la recreativa.")
 
-    if not gameScreen then
-        warn("[Universo Arcade] No se encontró GameScreen.")
-        remote:FireServer("RequestEnd")
-        return
-    end
+    -- La animación se completa antes de solicitar el cierre
+    -- de la sesión al servidor.
 
-    -- Ocultar los textos provisionales de la interfaz.
+    if activeInterface and not closingAnimationStarted then
 
-    for _, child in ipairs(gameScreen:GetChildren()) do
+        closingAnimationStarted = true
 
-        if child:IsA("TextLabel") then
-            child.Visible = false
+        local success, tween = pcall(function()
+            return activeInterface.AnimateClose()
+        end)
+
+        if success and tween then
+            tween.Completed:Wait()
         end
 
     end
 
-    -- Iniciar BrickBreaker.
+    -- La sesión podría haberse cerrado durante la animación.
+
+    if not sessionActive then
+        return
+    end
+
+    remote:FireServer("RequestEnd")
+
+end
+
+-- INICIAR MINIJUEGO
+
+local function startActiveMinigame(minigameId)
+
+    if minigameId ~= "BrickBreaker" then
+        warn("[Universo Arcade] Minijuego todavía no implementado:", minigameId)
+        requestExit()
+        return
+    end
+
+    if not activeGui or not activeInterface then
+        warn("[Universo Arcade] No existe la interfaz del minijuego.")
+        requestExit()
+        return
+    end
+
+    local gameScreen = activeInterface.GameScreen
+
+    if not gameScreen or not gameScreen.Parent then
+        warn("[Universo Arcade] No se encontró GameScreen.")
+        requestExit()
+        return
+    end
+
+    -- CALLBACKS DEL BRICKBREAKER
+
+    local callbacks = {
+
+        onStatsChanged = function(data)
+
+            if not sessionActive or not activeInterface then
+                return
+            end
+
+            activeInterface.SetStats(data)
+
+            if data and data.BestScore ~= nil then
+                activeInterface.SetBest(data.BestScore)
+            end
+
+        end,
+
+        onLevelCompleted = function(completedLevel, nextLevel)
+
+            if not sessionActive or not activeInterface then
+                return
+            end
+
+            activeInterface.ShowLevelTransition(
+                completedLevel,
+                nextLevel,
+                function()
+
+                    if not sessionActive or exitRequested then
+                        return
+                    end
+
+                    BrickBreakerController.ContinueLevel()
+
+                end
+            )
+
+        end,
+
+        onGameOver = function(data)
+
+            if not sessionActive or not activeInterface then
+                return
+            end
+
+            data = data or {}
+
+            activeInterface.ShowGameOver(
+                data,
+                data.BestScore
+            )
+
+            if data.BestScore ~= nil then
+                activeInterface.SetBest(data.BestScore)
+            end
+
+        end,
+
+    }
+
+    -- INICIAR CONTROLADOR
 
     local success, errorMessage = pcall(function()
-        BrickBreakerController.Start(gameScreen)
+
+        BrickBreakerController.Start(
+            gameScreen,
+            callbacks
+        )
+
+        BrickBreakerController.Pause()
+
     end)
 
     if not success then
 
-        warn("[Universo Arcade] Error iniciando BrickBreaker:", errorMessage)
+        warn(
+            "[Universo Arcade] Error iniciando BrickBreaker:",
+            errorMessage
+        )
 
         pcall(function()
             BrickBreakerController.Stop()
         end)
 
-        remote:FireServer("RequestEnd")
+        requestExit()
         return
+
     end
 
     brickBreakerActive = true
@@ -199,21 +347,7 @@ local function startActiveMinigame(minigameId)
 
 end
 
--- DETENER EL MINIJUEGO ACTIVO
-
-local function stopActiveMinigame()
-
-    if not brickBreakerActive then
-        return
-    end
-
-    BrickBreakerController.Stop()
-
-    brickBreakerActive = false
-
-    print("[Universo Arcade] BrickBreaker detenido.")
-
-end
+-- CREAR INTERFAZ Y ABRIR RECREATIVA
 
 local function startMachine(machine, minigameId)
 
@@ -235,13 +369,17 @@ local function startMachine(machine, minigameId)
 
     sessionActive = true
     exitRequested = false
+    closingAnimationStarted = false
+
     activeMachine = machine
 
-    -- Guardar el estado original.
+    -- GUARDAR ESTADO ORIGINAL
+
     saveCamera()
     freezeCharacter()
 
-    -- Colocar la cámara delante de la pantalla.
+    -- POSICIÓN DE CÁMARA
+
     local cameraPosition = screen.CFrame:PointToWorldSpace(
         Vector3.new(0, 0, 5.5)
     )
@@ -252,10 +390,10 @@ local function startMachine(machine, minigameId)
         screen.CFrame.UpVector
     )
 
-    -- Activar cámara controlada por el cliente.
     camera.CameraType = Enum.CameraType.Scriptable
 
-    -- Transición suave.
+    -- TRANSICIÓN DE CÁMARA
+
     cameraTween = TweenService:Create(
         camera,
         TweenInfo.new(
@@ -272,35 +410,102 @@ local function startMachine(machine, minigameId)
     cameraTween:Play()
     cameraTween.Completed:Wait()
 
-    -- Comprobar que la sesión sigue activa.
     if not sessionActive then
         return
     end
 
-    -- Mostrar interfaz.
-    activeGui = MachineInterface.Create(
-        minigameId,
-        player.Name,
-        function()
+    -- CREAR INTERFAZ
 
-            if exitRequested then
-                return
+    local success, gui, interface = pcall(function()
+
+        local createdGui, createdInterface = MachineInterface.Create(
+            minigameId,
+            player.Name,
+
+            -- SALIR
+
+            function()
+                requestExit()
+            end,
+
+            -- INICIAR PARTIDA
+
+            function()
+                if not sessionActive or exitRequested then
+                    return
+                end
+
+                if not brickBreakerActive then
+                    return
+                end
+
+                task.defer(function()
+                    BrickBreakerController.Resume()
+                end)
+            end,
+
+            -- PAUSAR
+
+            function()
+
+                if brickBreakerActive then
+                    BrickBreakerController.Pause()
+                end
+
+            end,
+
+            -- REANUDAR
+
+            function()
+
+                if brickBreakerActive then
+                    BrickBreakerController.Resume()
+                end
+
             end
+        )
 
-            exitRequested = true
+        return createdGui, createdInterface
 
-            remote:FireServer("RequestEnd")
+    end)
 
-        end
-    )
+    if not success then
 
-    print("[Universo Arcade] Interfaz abierta:", minigameId)
+        warn("[Universo Arcade] Error creando interfaz:", gui)
+
+        requestExit()
+        return
+
+    end
+
+    activeGui = gui
+    activeInterface = interface
+
+    print("[Universo Arcade] Interfaz creada:", minigameId)
+
+    -- INICIAR MINIJUEGO
 
     startActiveMinigame(minigameId)
 
+    if not sessionActive or exitRequested then
+        return
+    end
+
+    -- ANIMACIÓN DE ENTRADA
+
+    local openSuccess, openError = pcall(function()
+        activeInterface.AnimateOpen()
+    end)
+
+    if not openSuccess then
+        warn("[Universo Arcade] Error en animación de entrada:", openError)
+    end
+
 end
 
-local function endMachine(reason)
+-- CERRAR RECREATIVA
+
+endMachine = function(reason)
 
     if not sessionActive then
         return
@@ -313,14 +518,22 @@ local function endMachine(reason)
 
     stopActiveMinigame()
     closeInterface()
+
     restoreCharacter()
     restoreCamera()
 
     activeMachine = nil
+    closingAnimationStarted = false
 
 end
 
-remote.OnClientEvent:Connect(function(action, firstArgument, secondArgument)
+-- EVENTOS DEL SERVIDOR
+
+remote.OnClientEvent:Connect(function(
+    action,
+    firstArgument,
+    secondArgument
+)
 
     if action == "Started" then
 
@@ -339,18 +552,24 @@ remote.OnClientEvent:Connect(function(action, firstArgument, secondArgument)
 
 end)
 
--- Si el personaje desaparece, limpiar la interfaz local.
+-- LIMPIEZA AL DESAPARECER EL PERSONAJE
+
 player.CharacterRemoving:Connect(function()
 
-    stopActiveMinigame()
-
-    if activeGui then
-        closeInterface()
+    if not sessionActive then
+        return
     end
 
     sessionActive = false
-    activeMachine = nil
     exitRequested = false
+
+    stopActiveMinigame()
+    closeInterface()
+
+    restoreCamera()
+
+    activeMachine = nil
+    closingAnimationStarted = false
 
 end)
 
