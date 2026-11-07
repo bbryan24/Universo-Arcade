@@ -8,6 +8,7 @@
 ]]
 
 local BlockPuzzleBoard = {}
+local RunService = game:GetService("RunService")
 
 -- COLORES
 
@@ -265,6 +266,104 @@ function BlockPuzzleBoard.Create(parent)
         nextPreviews[index] = preview
     end
 
+
+    --==================================================
+    -- HERRAMIENTAS DEV - CONTROL DE NIVEL
+    --==================================================
+
+    local devPanel = Instance.new("Frame")
+
+    devPanel.Name = "DevLevelPanel"
+
+    
+    -- PANEL DEV DEBAJO DEL PANEL IZQUIERDO.
+    -- NO DEBE TAPAR LA CUADRÍCULA.
+
+    devPanel.AnchorPoint = Vector2.new(0, 0)
+
+    devPanel.Position = UDim2.fromScale(0.035, 0.955)
+
+    devPanel.Size = UDim2.fromScale(0.245, 0.042)
+
+
+    devPanel.BackgroundColor3 =
+        Color3.fromRGB(38, 42, 58)
+
+    devPanel.BorderSizePixel = 0
+    devPanel.ZIndex = 5
+
+    devPanel.Parent = container
+
+    -- HERRAMIENTAS DEV SOLO EN ROBLOX STUDIO.
+    -- EN EL JUEGO PUBLICADO ESTARÁN OCULTAS.
+
+    devPanel.Visible = RunService:IsStudio()
+
+    local devCorner = Instance.new("UICorner")
+    devCorner.CornerRadius = UDim.new(0, 5)
+    devCorner.Parent = devPanel
+
+    local devLabel = createLabel(
+        devPanel,
+        "DevLevelLabel",
+        "DEV  LVL 1",
+        UDim2.fromScale(0.50, 0.9),
+        UDim2.fromScale(0.25, 0.05),
+        11,
+        Color3.fromRGB(245, 190, 85)
+    )
+
+    devLabel.ZIndex = 6
+
+    -- BOTÓN PARA BAJAR NIVEL
+
+    local devMinusButton = Instance.new("TextButton")
+
+    devMinusButton.Name = "DevMinusButton"
+    devMinusButton.Size = UDim2.fromScale(0.23, 0.85)
+    devMinusButton.Position = UDim2.fromScale(0.01, 0.075)
+
+    devMinusButton.Text = "-"
+    devMinusButton.TextSize = 21
+    devMinusButton.Font = Enum.Font.GothamBold
+
+    devMinusButton.TextColor3 = COLORS.White
+    devMinusButton.BackgroundColor3 =
+        Color3.fromRGB(105, 65, 55)
+
+    devMinusButton.BorderSizePixel = 0
+    devMinusButton.ZIndex = 6
+    devMinusButton.Parent = devPanel
+
+    local minusCorner = Instance.new("UICorner")
+    minusCorner.CornerRadius = UDim.new(0, 4)
+    minusCorner.Parent = devMinusButton
+
+    -- BOTÓN PARA SUBIR NIVEL
+
+    local devPlusButton = Instance.new("TextButton")
+
+    devPlusButton.Name = "DevPlusButton"
+    devPlusButton.Size = UDim2.fromScale(0.23, 0.85)
+    devPlusButton.Position = UDim2.fromScale(0.76, 0.075)
+
+    devPlusButton.Text = "+"
+    devPlusButton.TextSize = 21
+    devPlusButton.Font = Enum.Font.GothamBold
+
+    devPlusButton.TextColor3 = COLORS.White
+    devPlusButton.BackgroundColor3 =
+        Color3.fromRGB(55, 100, 75)
+
+    devPlusButton.BorderSizePixel = 0
+    devPlusButton.ZIndex = 6
+    devPlusButton.Parent = devPanel
+
+    local plusCorner = Instance.new("UICorner")
+    plusCorner.CornerRadius = UDim.new(0, 4)
+    plusCorner.Parent = devPlusButton
+
+
     -- RESULTADO
 
     return {
@@ -279,6 +378,11 @@ function BlockPuzzleBoard.Create(parent)
         ScoreLabel = scoreLabel,
         LevelLabel = levelLabel,
         LinesLabel = linesLabel,
+
+        DevPanel = devPanel,
+        DevLevelLabel = devLabel,
+        DevMinusButton = devMinusButton,
+        DevPlusButton = devPlusButton,
     }
 end
 

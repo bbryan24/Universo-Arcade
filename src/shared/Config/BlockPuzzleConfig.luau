@@ -38,17 +38,53 @@ BlockPuzzleConfig.Game = {
 
     InitialLevel = 1,
 
-    InitialDropInterval = 0.65,
+    
+    -- VELOCIDAD POR NIVEL.
+    -- SEGUNDOS PARA DESCENDER UNA CASILLA.
 
-    SpeedMultiplier = 0.80,
+    DropIntervals = {
 
-    MinimumDropInterval = 0.06,
+        0.550, -- NIVEL 1
+        0.390, -- NIVEL 2
+        0.290, -- NIVEL 3
+        0.230, -- NIVEL 4
+        0.180, -- NIVEL 5
+        0.150, -- NIVEL 6
+        0.125, -- NIVEL 7
+        0.110, -- NIVEL 8
+        0.095, -- NIVEL 9
+        0.083, -- NIVEL 10
+
+        0.074, -- NIVEL 11
+        0.066, -- NIVEL 12
+        0.059, -- NIVEL 13
+        0.053, -- NIVEL 14
+        0.048, -- NIVEL 15
+        0.044, -- NIVEL 16
+        0.040, -- NIVEL 17
+        0.037, -- NIVEL 18
+        0.034, -- NIVEL 19
+        0.031, -- NIVEL 20
+
+        0.028, -- NIVEL 21
+        0.025, -- NIVEL 22
+
+    },
+
 
     SoftDropMultiplier = 20,
 
-    InitialLinesPerLevel = 8,
-
+    InitialLinesPerLevel = 6,
     AdditionalLinesPerLevel = 1,
+    LevelsPerLineIncrease = 2,
+
+    -- TIEMPO DE CORTESÍA AL APOYAR UNA PIEZA
+
+    LockDelay = 0.8,
+
+    -- REINICIOS MÁXIMOS DEL TIEMPO DE CORTESÍA
+
+    MaxLockResets = 15,
 
 }
 
@@ -92,6 +128,29 @@ BlockPuzzleConfig.Hold = {
     OncePerPiece = true,
 
 }
+
+
+--==================================================
+-- HERRAMIENTAS DE DESARROLLO
+--==================================================
+
+BlockPuzzleConfig.Dev = {
+
+    -- Activar herramientas de prueba.
+
+    Enabled = true,
+
+    -- Nivel mínimo y máximo seleccionable.
+
+    MinimumLevel = 1,
+    MaximumLevel = 22,
+
+    -- Mostrar controles para cambiar de nivel.
+
+    ShowLevelControls = true,
+
+}
+
 
 --==================================================
 -- MOVIMIENTO HORIZONTAL

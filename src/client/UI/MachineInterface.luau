@@ -875,77 +875,449 @@ function MachineInterface.Create(
 
         addCorner(decorativePaddle, 4)
 
-    -- BLOCK PUZZLE
+       -- BLOCK PUZZLE
+
+       
+    --==================================================
+    -- BLOCK PUZZLE - PORTADA CON MINI TABLERO
+    --==================================================
 
     elseif minigameId == "BlockPuzzle" then
 
+        -- CONTENEDOR CENTRADO DEL MINI TABLERO
+
+        local miniBoard = create("Frame", {
+
+            Name = "BlockPuzzleMiniBoard",
+
+            AnchorPoint = Vector2.new(0.5, 0),
+
+            Position = UDim2.fromScale(0.5, 0.08),
+
+            Size = UDim2.fromScale(0.23, 0.46),
+
+            BackgroundColor3 = Color3.fromRGB(15, 22, 38),
+
+            BorderSizePixel = 0,
+
+            ZIndex = 22,
+
+        }, startView)
+
+        addCorner(miniBoard, 5)
+
+        addStroke(
+            miniBoard,
+            Color3.fromRGB(80, 135, 195),
+            2
+        )
+
+        -- CUADRÍCULA DE 8 COLUMNAS Y 10 FILAS.
+        -- TODAS LAS PIEZAS UTILIZAN LA MISMA REJILLA.
+
+        local columns = 8
+        local rows = 10
+
+        local cellSize = 0.09
+
+        local offsetX = 0.14
+        local offsetY = 0.05
+
+        -- DISTRIBUCIÓN DEL TABLERO
+        -- CADA LETRA REPRESENTA UN COLOR.
+        -- "." REPRESENTA UNA CASILLA VACÍA.
+        --
+        -- DOS FILAS INFERIORES CON UN HUECO
+        -- DE DOS COLUMNAS PARA LA PIEZA O.
+
+        local boardPattern = {
+
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+            "........",
+            "LLTT..SS",
+            "LJJJ..SS",
+
+        }
+
         local blockColors = {
-            Color3.fromRGB(45, 180, 245),
-            Color3.fromRGB(245, 190, 55),
-            Color3.fromRGB(155, 90, 235),
-            Color3.fromRGB(65, 205, 130),
+
+            L = Color3.fromRGB(245, 145, 45),
+            T = Color3.fromRGB(175, 75, 225),
+            S = Color3.fromRGB(75, 220, 95),
+            J = Color3.fromRGB(65, 105, 235),
+
+            O = Color3.fromRGB(245, 215, 45),
+
         }
 
-        local blockPattern = {
-            {0, 0, 1, 0, 0},
-            {0, 1, 1, 1, 0},
-            {1, 1, 1, 1, 1},
-            {0, 0, 1, 0, 0},
-        }
+        -- CREAR UNA CASILLA ALINEADA A LA REJILLA
 
-        for row, columns in ipairs(blockPattern) do
-            for column, value in ipairs(columns) do
+        
+        local function createMiniCell(
+            column,
+            row,
+            color,
+            transparency,
+            isGhost
+        )
 
-                if value == 1 then
+            local cell = create("Frame", {
 
-                    local block = create("Frame", {
+                Name = isGhost and "GhostCell" or "MiniCell",
 
-                        Name = "PuzzleBlock_" .. row .. "_" .. column,
+                Position = UDim2.fromScale(
+                    offsetX + (column - 1) * cellSize,
+                    offsetY + (row - 1) * cellSize
+                ),
 
-                        Position = UDim2.fromScale(
-                            0.5 + (column - 3) * 0.075,
-                            0.20 + (row - 1) * 0.065
-                        ),
+                Size = UDim2.fromScale(
+                    cellSize - 0.008,
+                    cellSize - 0.008
+                ),
 
-                        Size = UDim2.fromScale(0.065, 0.055),
+                BackgroundColor3 = color,
+                BackgroundTransparency = transparency or 0,
 
-                        BackgroundColor3 =
-                            blockColors[(row + column - 2) % #blockColors + 1],
+                BorderSizePixel = 0,
+                ZIndex = 23,
 
-                        BorderSizePixel = 0,
+            }, miniBoard)
 
-                        ZIndex = 22,
+            -- ESQUINAS MÁS SUAVES
 
-                    }, startView)
+            addCorner(cell, 4)
 
-                    addStroke(block, Color3.fromRGB(255, 255, 255), 1)
+            -- BORDES DISCRETOS
 
-                end
+            if isGhost then
+
+                local stroke = addStroke(
+                    cell,
+                    color,
+                    1
+                )
+
+                stroke.Transparency = 0.45
+
+            else
+
+                local stroke = addStroke(
+                    cell,
+                    Color3.fromRGB(180, 200, 230),
+                    0.5
+                )
+
+                stroke.Transparency = 0.75
+
+            end
+
+            return cell
+        end
+
+
+        -- CREAR FONDO DE LA CUADRÍCULA
+
+        for row = 1, rows do
+
+            for column = 1, columns do
+
+                createMiniCell(
+                    column,
+                    row,
+                    Color3.fromRGB(21, 29, 46),
+                    0,
+                    false
+                )
 
             end
         end
 
-        createLabel(
+        -- DIBUJAR PIEZAS YA COLOCADAS
+
+        for row, pattern in ipairs(boardPattern) do
+
+            for column = 1, columns do
+
+                local symbol = string.sub(
+                    pattern,
+                    column,
+                    column
+                )
+
+                if symbol ~= "." then
+
+                    createMiniCell(
+                        column,
+                        row,
+                        blockColors[symbol],
+                        0,
+                        false
+                    )
+
+                end
+            end
+        end
+
+        -- SOMBRA DE UNA PIEZA O
+        -- INDICA DÓNDE CAERÁ.
+
+        local ghostPositions = {
+            {5, 9},
+            {6, 9},
+            {5, 10},
+            {6, 10},
+        }
+
+        for _, position in ipairs(ghostPositions) do
+
+            createMiniCell(
+                position[1],
+                position[2],
+                blockColors.O,
+                0.82,
+                true
+            )
+        end
+
+        -- PIEZA O CAYENDO DESDE ARRIBA
+
+        local fallingPiece = create("Frame", {
+
+            Name = "FallingTetromino",
+
+            Size = UDim2.fromScale(1, 1),
+
+            BackgroundTransparency = 1,
+
+            ZIndex = 24,
+
+        }, miniBoard)
+
+        local fallingPositions = {
+            {5, 2},
+            {6, 2},
+            {5, 3},
+            {6, 3},
+        }
+
+        for _, position in ipairs(fallingPositions) do
+
+            local cell = createMiniCell(
+                position[1],
+                position[2],
+                blockColors.O,
+                0,
+                false
+            )
+
+            cell.ZIndex = 24
+            cell.Parent = fallingPiece
+        end
+
+        
+        --==================================================
+        -- ANIMACIÓN DE LA PORTADA DE BLOCKPUZZLE
+        --==================================================
+
+        -- DISTANCIA ENTRE LA POSICIÓN INICIAL
+        -- Y LAS DOS FILAS INFERIORES.
+
+        local landingDistance = 7 * cellSize
+
+        -- CREAR DESTELLOS SOBRE LAS DOS FILAS.
+
+        local flashRows = {}
+
+        for _, row in ipairs({9, 10}) do
+
+            local flash = create("Frame", {
+
+                Name = "LineClearFlash_" .. row,
+
+                Position = UDim2.fromScale(
+                    offsetX,
+                    offsetY + (row - 1) * cellSize
+                ),
+
+                Size = UDim2.fromScale(
+                    columns * cellSize,
+                    cellSize - 0.008
+                ),
+
+                BackgroundColor3 =
+                    Color3.fromRGB(180, 230, 255),
+
+                BackgroundTransparency = 1,
+
+                BorderSizePixel = 0,
+
+                Visible = false,
+
+                ZIndex = 26,
+
+            }, miniBoard)
+
+            addCorner(flash, 3)
+
+            table.insert(flashRows, flash)
+
+        end
+
+        -- REPRODUCIR ANIMACIÓN EN BUCLE.
+
+        task.spawn(function()
+
+            while gui.Parent and startView.Parent do
+
+                -- NO ANIMAR MIENTRAS LA PORTADA
+                -- NO ESTÉ EN PANTALLA.
+
+                if currentView ~= "Start" then
+
+                    task.wait(0.2)
+                    continue
+
+                end
+
+                -- RESTABLECER POSICIÓN INICIAL.
+
+                fallingPiece.Position =
+                    UDim2.fromScale(0, 0)
+
+                fallingPiece.Visible = true
+
+                for _, flash in ipairs(flashRows) do
+
+                    flash.Visible = false
+                    flash.BackgroundTransparency = 1
+
+                end
+
+                -- PEQUEÑA ESPERA ANTES DE CAER.
+
+                task.wait(0.45)
+
+                if currentView ~= "Start"
+                    or not gui.Parent then
+
+                    continue
+
+                end
+
+                -- CAÍDA SUAVE DE LA PIEZA.
+
+                local fallTween = TweenService:Create(
+                    fallingPiece,
+
+                    TweenInfo.new(
+                        1.35,
+                        Enum.EasingStyle.Sine,
+                        Enum.EasingDirection.In
+                    ),
+
+                    {
+                        Position = UDim2.fromScale(
+                            0,
+                            landingDistance
+                        )
+                    }
+                )
+
+                fallTween:Play()
+                fallTween.Completed:Wait()
+
+                if currentView ~= "Start"
+                    or not gui.Parent then
+
+                    continue
+
+                end
+
+                -- PAUSA BREVE AL ENCAJAR.
+
+                task.wait(0.12)
+
+                -- DESTELLO DE LAS DOS FILAS.
+
+                for _, flash in ipairs(flashRows) do
+
+                    flash.Visible = true
+                    flash.BackgroundTransparency = 0.35
+
+                    local flashTween = TweenService:Create(
+                        flash,
+
+                        TweenInfo.new(
+                            0.35,
+                            Enum.EasingStyle.Quad,
+                            Enum.EasingDirection.Out
+                        ),
+
+                        {
+                            BackgroundTransparency = 1
+                        }
+                    )
+
+                    flashTween:Play()
+
+                end
+
+                -- OCULTAR LA PIEZA DURANTE EL REINICIO.
+
+                task.wait(0.40)
+
+                fallingPiece.Visible = false
+
+                -- PAUSA ANTES DE REPETIR.
+
+                task.wait(0.65)
+
+            end
+
+        end)
+
+
+        -- TÍTULO
+
+        local blockPuzzleTitle = createLabel(
             startView,
             "ArcadeGameTitle",
             "BLOCK PUZZLE",
-            UDim2.fromScale(0.9, 0.17),
-            UDim2.fromScale(0.05, 0.54),
+            UDim2.fromScale(0.9, 0.14),
+            UDim2.fromScale(0.05, 0.57),
             42,
             theme.Primary,
             Enum.Font.Arcade
-        ).ZIndex = 23
+        )
 
-        createLabel(
+        blockPuzzleTitle.ZIndex = 23
+
+        blockPuzzleTitle.TextStrokeColor3 =
+            Color3.fromRGB(20, 40, 60)
+
+        blockPuzzleTitle.TextStrokeTransparency = 0.15
+
+        -- SUBTÍTULO
+
+        local blockPuzzleSubtitle = createLabel(
             startView,
             "ArcadeSubtitle",
-            "BUILD. MATCH. CLEAR.",
+            "STACK. ROTATE. CLEAR.",
             UDim2.fromScale(0.9, 0.07),
-            UDim2.fromScale(0.05, 0.70),
+            UDim2.fromScale(0.05, 0.71),
             17,
             COLORS.White,
             Enum.Font.Code
-        ).ZIndex = 23
+        )
+
+        blockPuzzleSubtitle.ZIndex = 23
+
 
     -- BUBBLE SHOOTER
 
