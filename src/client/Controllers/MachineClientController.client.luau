@@ -15,6 +15,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
+local ProximityPromptService = game:GetService("ProximityPromptService")
 
 local player = Players.LocalPlayer
 local camera = workspace.CurrentCamera
@@ -403,11 +404,18 @@ local function startMachine(machine, minigameId)
         return
     end
 
+    
     sessionActive = true
     exitRequested = false
     closingAnimationStarted = false
 
     activeMachine = machine
+
+    -- DESACTIVAR INTERACCIONES PARA ESTE JUGADOR
+    -- MIENTRAS UTILIZA UNA RECREATIVA.
+
+    ProximityPromptService.Enabled = false
+
 
     -- GUARDAR ESTADO ORIGINAL
 
@@ -560,6 +568,10 @@ endMachine = function(reason)
     restoreCharacter()
     restoreCamera()
 
+    -- REACTIVAR INTERACCIONES AL SALIR.
+
+    ProximityPromptService.Enabled = true
+
     activeMachine = nil
     closingAnimationStarted = false
 
@@ -601,13 +613,19 @@ player.CharacterRemoving:Connect(function()
     sessionActive = false
     exitRequested = false
 
+    
     stopActiveMinigame()
     closeInterface()
 
     restoreCamera()
 
+    -- REACTIVAR INTERACCIONES TRAS PERDER EL PERSONAJE.
+
+    ProximityPromptService.Enabled = true
+
     activeMachine = nil
     closingAnimationStarted = false
+
 
 end)
 

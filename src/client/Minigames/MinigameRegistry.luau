@@ -19,6 +19,12 @@ local controllers = {
             :WaitForChild("BrickBreakerController")
     ),
 
+    BlockPuzzle = require(
+        script.Parent
+            :WaitForChild("BlockPuzzle")
+            :WaitForChild("BlockPuzzleController")
+    ),
+
 }
 
 -- OBTENER CONTROLADOR
