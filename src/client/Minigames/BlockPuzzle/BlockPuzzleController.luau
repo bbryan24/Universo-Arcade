@@ -45,6 +45,16 @@ local Config = require(
         :WaitForChild("BlockPuzzleConfig")
 )
 
+--==================================================
+-- SISTEMA DE AUDIO
+--==================================================
+
+local AudioController = require(
+    script.Parent.Parent.Parent
+        :WaitForChild("Controllers")
+        :WaitForChild("AudioController")
+)
+
 local BlockPuzzleController = {}
 
 --==================================================
@@ -1464,11 +1474,23 @@ local function movePiece(deltaRow, deltaColumn)
 
     end
 
+
     renderBoard()
+
+    -- REPRODUCIR MOVE SOLO SI EL JUGADOR
+    -- HA DESPLAZADO LA PIEZA HORIZONTALMENTE.
+
+    if deltaRow == 0 and deltaColumn ~= 0 then
+
+        AudioController.Play("BlockPuzzle", "Move")
+
+    end
 
     return true
 
 end
+
+
 
 --==================================================
 -- ROTAR MATRIZ
@@ -1587,10 +1609,19 @@ local function rotatePiece(clockwise)
 
             end
 
+
             renderBoard()
 
+            -- REPRODUCIR ROTATE SOLO
+            -- CUANDO LA ROTACIÓN ES VÁLIDA.
+
+            AudioController.Play(
+                "BlockPuzzle",
+                "Rotate"
+            )
 
             return
+
         end
     end
 end
