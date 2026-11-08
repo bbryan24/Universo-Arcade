@@ -1144,11 +1144,33 @@ local function clearCompletedLines()
         end
     end
 
+    
     if cleared == 0 then
         return
     end
 
+    --==================================================
+    -- SONIDO DE ELIMINACIÓN DE LÍNEAS
+    --==================================================
+
+    -- UNA, DOS O TRES LÍNEAS:
+    -- REPRODUCIR UN SOLO EFECTO POR JUGADA.
+
+    if cleared >= 1 and cleared <= 3 then
+
+        AudioController.Play(
+            "BlockPuzzle",
+            "LineClear"
+        )
+
+    end
+
+    -- CUATRO LÍNEAS:
+    -- RESERVAMOS EL AUDIO PARA TETRIS!
+    -- EVITANDO SUPERPONER AMBOS EFECTOS.
+
     local scoring = Config.Scoring
+
 
     local points = {
         [1] = scoring.Single,
@@ -1272,6 +1294,10 @@ local function lockPiece()
     end
 
     currentPiece = nil
+
+    -- SONIDO AL FIJAR DEFINITIVAMENTE LA PIEZA.
+
+    AudioController.Play("BlockPuzzle", "Lock")
 
     -- BUSCAR FILAS COMPLETAS SIN ELIMINARLAS.
 

@@ -45,12 +45,12 @@ AudioConfig.BlockPuzzle = {
     },
 
     Lock = {
-        SoundId = "",
+        SoundId = "rbxassetid://98933370523341",
         Volume = 0.45,
     },
 
     LineClear = {
-        SoundId = "",
+        SoundId = "rbxassetid://134726803249303",
         Volume = 0.65,
     },
 
