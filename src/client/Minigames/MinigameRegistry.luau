@@ -25,6 +25,12 @@ local controllers = {
             :WaitForChild("BlockPuzzleController")
     ),
 
+    BubbleShooter = require(
+        script.Parent
+            :WaitForChild("BubbleShooter")
+            :WaitForChild("BubbleShooterController")
+    ),
+
 }
 
 -- OBTENER CONTROLADOR
